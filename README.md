@@ -1,2 +1,1 @@
-# entain-test-task
-Entain test task
+# Entain test task
