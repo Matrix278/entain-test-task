@@ -12,11 +12,3 @@ type User struct {
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
 }
-
-func (u *User) Deposit(amount float64) {
-	u.Balance += amount
-}
-
-func (u *User) Withdraw(amount float64) {
-	u.Balance -= amount
-}

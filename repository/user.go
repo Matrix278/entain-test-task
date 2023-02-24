@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// GetAllUsers will return all the users in the database
 func GetAllUsers() ([]model.User, error) {
 	var users []model.User
 
@@ -23,7 +22,12 @@ func GetAllUsers() ([]model.User, error) {
 
 	for rows.Next() {
 		var user model.User
-		err := rows.Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt)
+		err := rows.Scan(
+			&user.ID,
+			&user.Balance,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan user")
 		}
@@ -34,7 +38,6 @@ func GetAllUsers() ([]model.User, error) {
 	return users, nil
 }
 
-// GetUser will return a user by id
 func GetUser(userID strfmt.UUID4) (*model.User, error) {
 	var user model.User
 
