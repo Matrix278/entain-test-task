@@ -22,7 +22,7 @@ var sourceTypeValues = []string{
 
 func ValidateSourceHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if model.IsArrayContainsValue(sourceTypeValues, r.Header.Get("Source-Type")) {
+		if !model.IsArrayContainsValue(sourceTypeValues, r.Header.Get("Source-Type")) {
 			StatusBadRequest(w, "Source-Type header is not valid")
 			return
 		}
