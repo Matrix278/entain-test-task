@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/entain-test-task/model"
+	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
 	"github.com/go-openapi/strfmt"
 	"github.com/gorilla/mux"
@@ -22,7 +23,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	getAllUsersResponse := model.GetAllUsersResponse{
+	getAllUsersResponse := responsemodel.GetAllUsersResponse{
 		Users: users,
 	}
 
@@ -30,11 +31,16 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	params := mux.Vars(r)
 	userID := params["id"]
 
 	if !strfmt.IsUUID4(userID) {
 		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(model.Error{
+			Message: "user_id is not a valid UUID4",
+		})
 		return
 	}
 
@@ -43,7 +49,14 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Unable to get user. %v", err)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	if user == nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		json.NewEncoder(w).Encode(model.Error{
+			Message: "user not found",
+		})
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(user)
