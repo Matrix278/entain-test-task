@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/entain-test-task/middleware"
 	"github.com/entain-test-task/repository"
@@ -20,7 +23,19 @@ func main() {
 
 	router := middleware.Router()
 
-	fmt.Println("Starting server on the port 8080...")
+	nMinutes, err := strconv.Atoi(os.Getenv("CANCEL_ODD_RECORDS_INTERVAL"))
+	if err != nil {
+		log.Fatal("CANCEL_INTERVAL must be an integer")
+	}
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	go func() {
+		for {
+			time.Sleep(time.Duration(nMinutes) * time.Minute)
+			// repository.CancelLatestOddRecords(10)
+		}
+	}()
+
+	fmt.Println("Starting server on the port " + os.Getenv("SERVER_PORT") + "...")
+
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("SERVER_PORT"), router))
 }
