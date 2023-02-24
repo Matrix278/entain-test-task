@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/entain-test-task/model"
+	requestmodel "github.com/entain-test-task/model/request"
 	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
 	"github.com/go-openapi/strfmt"
@@ -60,4 +61,20 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(user)
+}
+
+func ProcessRecord(w http.ResponseWriter, r *http.Request) {
+	var processRecordRequest requestmodel.ProcessRecordRequest
+
+	err := json.NewDecoder(r.Body).Decode(&processRecordRequest)
+	if err != nil {
+		log.Printf("Unable to decode the request body. %v", err)
+	}
+
+	err = repository.ProcessRecord(processRecordRequest)
+	if err != nil {
+		log.Printf("Unable to process record. %v", err)
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
