@@ -6,7 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/entain-test-task/repository/model"
+	"github.com/entain-test-task/model"
+	"github.com/go-openapi/strfmt"
 	_ "github.com/lib/pq"
 )
 
@@ -43,14 +44,19 @@ func InitDB() *sql.DB {
 func GetAllUsers() ([]model.User, error) {
 	var users []model.User
 
-	rows, err := DB.Query("SELECT * FROM users")
+	rows, err := DB.Query(`
+		SELECT
+			*
+		FROM
+			users
+	`)
 	if err != nil {
 		return nil, err
 	}
 
 	for rows.Next() {
 		var user model.User
-		err := rows.Scan(&user.ID, &user.Balance, &user.CreatedAt)
+		err := rows.Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -59,4 +65,25 @@ func GetAllUsers() ([]model.User, error) {
 	}
 
 	return users, nil
+}
+
+// GetUser will return a user by id
+func GetUser(userID strfmt.UUID4) (model.User, error) {
+	var user model.User
+
+	err := DB.QueryRow(`
+		SELECT
+			*
+		FROM
+			users
+		WHERE
+			id = $1
+	`,
+		userID,
+	).Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return user, nil
 }
