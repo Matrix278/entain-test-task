@@ -1,29 +1,37 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 )
 
-var Validate *validator.Validate
+var (
+	Translator ut.Translator
+	Validate   *validator.Validate
+)
 
 func init() {
 	validate := validator.New()
 
-	english := en.New()
-	uni := ut.New(english, english)
-	trans, _ := uni.GetTranslator("en")
-	_ = enTranslations.RegisterDefaultTranslations(validate, trans)
+	en := en.New()
+	uni := ut.New(en, en)
+	Translator, _ = uni.GetTranslator("en")
 
-	validate.RegisterValidation("record_state", RecordStateValidator)
+	enTranslations.RegisterDefaultTranslations(validate, Translator)
+
+	validate.RegisterValidation("record_state", recordStateValidator)
+	validate.RegisterTranslation("record_state", Translator, func(ut ut.Translator) error {
+		return ut.Add("record_state", "{0} is not a valid record state", true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T("record_state", fe.Field())
+		return t
+	})
 
 	Validate = validate
-}
-
-func RecordStateValidator(fl validator.FieldLevel) bool {
-	return IsArrayContainsValue(recordStateValues, fl.Field().String())
 }
 
 func IsArrayContainsValue(array []string, value string) bool {
@@ -36,6 +44,25 @@ func IsArrayContainsValue(array []string, value string) bool {
 	return false
 }
 
-func ValidateRequest(request interface{}) error {
-	return Validate.Struct(request)
+func ValidateRequest(request interface{}) []error {
+	err := Validate.Struct(request)
+	return translateError(err)
+}
+
+func recordStateValidator(fl validator.FieldLevel) bool {
+	return IsArrayContainsValue(recordStateValues, fl.Field().String())
+}
+
+func translateError(err error) (errs []error) {
+	if err == nil {
+		return nil
+	}
+
+	validatorErrs := err.(validator.ValidationErrors)
+	for _, e := range validatorErrs {
+		translatedErr := fmt.Errorf(e.Translate(Translator))
+		errs = append(errs, translatedErr)
+	}
+
+	return errs
 }

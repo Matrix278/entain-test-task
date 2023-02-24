@@ -36,6 +36,10 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 		processRecordRequest.Amount,
 		time.Now(),
 	); err != nil {
+		if err.Error() == "pq: duplicate key value violates unique constraint \"transaction_pkey\"" {
+			return ErrTransactionAlreadyExists()
+		}
+
 		return errors.Wrap(err, "failed to insert transaction")
 	}
 
@@ -61,4 +65,8 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 	}
 
 	return nil
+}
+
+func ErrTransactionAlreadyExists() error {
+	return errors.New("transaction already exists")
 }

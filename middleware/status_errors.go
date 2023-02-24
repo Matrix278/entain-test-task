@@ -33,3 +33,18 @@ func StatusUnprocessableEntity(w http.ResponseWriter, message string) {
 		Message: message,
 	})
 }
+
+func StatusBadRequestWithErrors(w http.ResponseWriter, message string, validationErrors []error) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+
+	errorDetails := make([]string, 0)
+	for _, validationError := range validationErrors {
+		errorDetails = append(errorDetails, validationError.Error())
+	}
+
+	json.NewEncoder(w).Encode(model.Error{
+		Message: message,
+		Errors:  errorDetails,
+	})
+}

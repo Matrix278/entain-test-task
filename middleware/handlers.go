@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -71,23 +72,37 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := model.ValidateRequest(processRecordRequest)
+	err := json.NewDecoder(r.Body).Decode(&processRecordRequest)
 	if err != nil {
-		log.Printf("Unable to validate request body. %v", err)
-		StatusBadRequest(w, err.Error())
+		typeErr, ok := err.(*json.UnmarshalTypeError)
+		if ok {
+			StatusBadRequestWithErrors(w, "validation error", []error{
+				errors.New(typeErr.Field + " is not is not within allowed range"),
+			})
+			return
+		}
+
+		log.Printf("Unable to decode the request body. %v", err)
+		StatusInternalServerError(w)
 		return
 	}
 
-	err = json.NewDecoder(r.Body).Decode(&processRecordRequest)
-	if err != nil {
-		log.Printf("Unable to decode the request body. %v", err)
-		StatusInternalServerError(w)
+	validationErrors := model.ValidateRequest(processRecordRequest)
+	if validationErrors != nil {
+		log.Printf("Unable to validate request body. %v", validationErrors)
+		StatusBadRequestWithErrors(w, "validation error", validationErrors)
 		return
 	}
 
 	err = repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
 	if err != nil {
 		log.Printf("Unable to process record. %v", err)
+
+		if err.Error() == repository.ErrTransactionAlreadyExists().Error() {
+			StatusUnprocessableEntity(w, repository.ErrTransactionAlreadyExists().Error())
+			return
+		}
+
 		StatusInternalServerError(w)
 		return
 	}
@@ -95,6 +110,6 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(responsemodel.ProcessRecordResponse{
-		Message: "Record processed successfully",
+		Message: "OK",
 	})
 }
