@@ -57,6 +57,10 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 		time.Now(),
 		userID,
 	); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return errors.Wrap(err, "failed to rollback transaction")
+		}
+
 		return errors.Wrap(err, "failed to update user balance")
 	}
 
