@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log"
 	"time"
 
 	"github.com/entain-test-task/model"
@@ -10,18 +11,43 @@ import (
 )
 
 func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.ProcessRecordRequest) error {
-	var amountProcessIdentifier string
+	var amount float64
 
 	switch processRecordRequest.State {
 	case model.RecordStateWin:
-		amountProcessIdentifier = "+"
+		amount = processRecordRequest.Amount
 	case model.RecordStateLose:
-		amountProcessIdentifier = "-"
+		amount = -processRecordRequest.Amount
 	}
 
 	tx, err := DB.Begin()
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			log.Printf("failed to rollback transaction: %v", err)
+		}
+	}()
+
+	// Check if the user has enough balance
+	var balance float64
+	if err := tx.QueryRow(`
+		SELECT
+			balance
+		FROM
+			users
+		WHERE
+			id = $1
+	`,
+		userID,
+	).Scan(&balance); err != nil {
+		return errors.Wrap(err, "failed to get user balance")
+	}
+
+	if balance+amount < 0 {
+		return ErrInsufficientBalance()
 	}
 
 	// Insert the transaction
@@ -33,7 +59,7 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 	`,
 		processRecordRequest.TransactionID,
 		userID,
-		processRecordRequest.Amount,
+		amount,
 		time.Now(),
 	); err != nil {
 		if err.Error() == "pq: duplicate key value violates unique constraint \"transaction_pkey\"" {
@@ -48,19 +74,15 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 		UPDATE
 			users
 		SET
-			balance = balance `+amountProcessIdentifier+` $1,
+			balance = balance + $1,
 			updated_at = $2
 		WHERE
 			id = $3
 	`,
-		processRecordRequest.Amount,
+		amount,
 		time.Now(),
 		userID,
 	); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return errors.Wrap(err, "failed to rollback transaction")
-		}
-
 		return errors.Wrap(err, "failed to update user balance")
 	}
 
@@ -73,4 +95,8 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 
 func ErrTransactionAlreadyExists() error {
 	return errors.New("transaction already exists")
+}
+
+func ErrInsufficientBalance() error {
+	return errors.New("insufficient balance")
 }

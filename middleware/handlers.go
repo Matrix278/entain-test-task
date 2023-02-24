@@ -98,6 +98,11 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Unable to process record. %v", err)
 
+		if err.Error() == repository.ErrInsufficientBalance().Error() {
+			StatusUnprocessableEntity(w, repository.ErrInsufficientBalance().Error())
+			return
+		}
+
 		if err.Error() == repository.ErrTransactionAlreadyExists().Error() {
 			StatusUnprocessableEntity(w, repository.ErrTransactionAlreadyExists().Error())
 			return
