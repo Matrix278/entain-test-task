@@ -7,7 +7,7 @@ const (
 	RecordStateLose RecordState = "lose"
 )
 
-var recordStateValues = []RecordState{
-	RecordStateWin,
-	RecordStateLose,
+var recordStateValues = []string{
+	string(RecordStateWin),
+	string(RecordStateLose),
 }

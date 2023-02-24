@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/entain-test-task/model"
 	requestmodel "github.com/entain-test-task/model/request"
 	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
@@ -25,11 +26,9 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	getAllUsersResponse := responsemodel.GetAllUsersResponse{
+	json.NewEncoder(w).Encode(responsemodel.GetAllUsersResponse{
 		Users: users,
-	}
-
-	json.NewEncoder(w).Encode(getAllUsersResponse)
+	})
 }
 
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +71,14 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&processRecordRequest)
+	err := model.ValidateRequest(processRecordRequest)
+	if err != nil {
+		log.Printf("Unable to validate request body. %v", err)
+		StatusBadRequest(w, err.Error())
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&processRecordRequest)
 	if err != nil {
 		log.Printf("Unable to decode the request body. %v", err)
 		StatusInternalServerError(w)
@@ -87,4 +93,8 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(responsemodel.ProcessRecordResponse{
+		Message: "Record processed successfully",
+	})
 }
