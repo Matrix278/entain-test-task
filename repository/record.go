@@ -5,10 +5,11 @@ import (
 
 	"github.com/entain-test-task/model"
 	requestmodel "github.com/entain-test-task/model/request"
+	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
 )
 
-func ProcessRecord(processRecordRequest requestmodel.ProcessRecordRequest) error {
+func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.ProcessRecordRequest) error {
 	var amountProcessIdentifier string
 
 	switch processRecordRequest.State {
@@ -31,7 +32,7 @@ func ProcessRecord(processRecordRequest requestmodel.ProcessRecordRequest) error
 			($1, $2, $3, $4)
 	`,
 		processRecordRequest.TransactionID,
-		processRecordRequest.UserID,
+		userID,
 		processRecordRequest.Amount,
 		time.Now(),
 	); err != nil {
@@ -50,7 +51,7 @@ func ProcessRecord(processRecordRequest requestmodel.ProcessRecordRequest) error
 	`,
 		processRecordRequest.Amount,
 		time.Now(),
-		processRecordRequest.UserID,
+		userID,
 	); err != nil {
 		return errors.Wrap(err, "failed to update user balance")
 	}

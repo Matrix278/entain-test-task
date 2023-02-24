@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/entain-test-task/model"
 	requestmodel "github.com/entain-test-task/model/request"
 	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
@@ -19,6 +18,8 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := repository.GetAllUsers()
 	if err != nil {
 		log.Printf("Unable to get all users. %v", err)
+		StatusInternalServerError(w)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -35,26 +36,22 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)
-	userID := params["id"]
+	userID := params["user_id"]
 
 	if !strfmt.IsUUID4(userID) {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(model.Error{
-			Message: "user_id is not a valid UUID4",
-		})
+		StatusBadRequest(w, "user_id is not a valid UUID4")
 		return
 	}
 
 	user, err := repository.GetUser(strfmt.UUID4(userID))
 	if err != nil {
 		log.Printf("Unable to get user. %v", err)
+		StatusInternalServerError(w)
+		return
 	}
 
 	if user == nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		json.NewEncoder(w).Encode(model.Error{
-			Message: "user not found",
-		})
+		StatusUnprocessableEntity(w, "user not found")
 		return
 	}
 
@@ -64,16 +61,29 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProcessRecord(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	var processRecordRequest requestmodel.ProcessRecordRequest
+
+	params := mux.Vars(r)
+	userID := params["user_id"]
+
+	if !strfmt.IsUUID4(userID) {
+		StatusBadRequest(w, "user_id is not a valid UUID4")
+		return
+	}
 
 	err := json.NewDecoder(r.Body).Decode(&processRecordRequest)
 	if err != nil {
 		log.Printf("Unable to decode the request body. %v", err)
+		StatusInternalServerError(w)
+		return
 	}
 
-	err = repository.ProcessRecord(processRecordRequest)
+	err = repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
 	if err != nil {
 		log.Printf("Unable to process record. %v", err)
+		StatusInternalServerError(w)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
