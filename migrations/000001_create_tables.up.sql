@@ -14,13 +14,13 @@ VALUES (
         now()
     );
 
-CREATE TABLE IF NOT EXISTS transactions (
+CREATE TABLE IF NOT EXISTS transaction (
     id uuid NOT NULL,
     user_id uuid NOT NULL,
     amount numeric(10, 2) NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone,
     canceled_at timestamp with time zone,
-    CONSTRAINT transactions_pkey PRIMARY KEY (id),
-    CONSTRAINT transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT transaction_pkey PRIMARY KEY (id),
+    CONSTRAINT transaction_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
