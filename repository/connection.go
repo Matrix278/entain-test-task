@@ -13,8 +13,7 @@ var DB *sql.DB
 
 // InitDB will initialize the database
 func InitDB() *sql.DB {
-	psqlInfo := fmt.Sprintf(
-		"host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable",
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_DB_HOST"),
 		os.Getenv("POSTGRES_DB_PORT"),
 		os.Getenv("POSTGRES_DB_USER"),
