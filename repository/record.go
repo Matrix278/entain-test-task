@@ -93,6 +93,102 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 	return nil
 }
 
+func GetLatestOddRecordTransactions(numberOfTransactionRecords int) ([]model.Transaction, error) {
+	var transactions []model.Transaction
+
+	rows, err := DB.Query(`
+		SELECT
+			*
+		FROM
+			transaction
+		WHERE
+			mod(amount, 2) = 1
+		AND
+			canceled_at IS NULL 
+		ORDER BY
+			created_at DESC
+		LIMIT
+			$1
+	`,
+		numberOfTransactionRecords,
+	)
+	if err != nil {
+		return transactions, errors.Wrap(err, "failed to get latest odd records")
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var transaction model.Transaction
+
+		if err := rows.Scan(
+			&transaction.ID,
+			&transaction.UserID,
+			&transaction.Amount,
+			&transaction.CreatedAt,
+			&transaction.UpdatedAt,
+			&transaction.CanceledAt,
+		); err != nil {
+			return transactions, errors.Wrap(err, "failed to scan transaction")
+		}
+
+		transactions = append(transactions, transaction)
+	}
+
+	return transactions, nil
+}
+
+func CancelTransactionRecord(transaction model.Transaction) error {
+	tx, err := DB.Begin()
+	if err != nil {
+		return errors.Wrap(err, "failed to begin transaction")
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			log.Printf("failed to rollback transaction: %v", err)
+		}
+	}()
+
+	// Cancel the transaction
+	if _, err := tx.Exec(`
+		UPDATE
+			transaction
+		SET
+			canceled_at = $1
+		WHERE
+			id = $2
+	`,
+		time.Now(),
+		transaction.ID,
+	); err != nil {
+		return errors.Wrap(err, "failed to cancel transaction")
+	}
+
+	// Refund the user balance
+	if _, err := tx.Exec(`
+		UPDATE
+			users
+		SET
+			balance = balance - $1,
+			updated_at = $2
+		WHERE
+			id = $3
+	`,
+		transaction.Amount,
+		time.Now(),
+		transaction.UserID,
+	); err != nil {
+		return errors.Wrap(err, "failed to update user balance")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
+	}
+
+	return nil
+}
+
 func ErrTransactionAlreadyExists() error {
 	return errors.New("transaction already exists")
 }

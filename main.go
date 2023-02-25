@@ -23,15 +23,15 @@ func main() {
 
 	router := middleware.Router()
 
-	nMinutes, err := strconv.Atoi(os.Getenv("CANCEL_ODD_RECORDS_INTERVAL"))
+	nMinutes, err := strconv.Atoi(os.Getenv("CANCEL_ODD_RECORDS_MINUTES_INTERVAL"))
 	if err != nil {
-		log.Fatal("CANCEL_INTERVAL must be an integer")
+		log.Fatal("CANCEL_ODD_RECORDS_MINUTES_INTERVAL must be an integer")
 	}
 
 	go func() {
 		for {
 			time.Sleep(time.Duration(nMinutes) * time.Minute)
-			// repository.CancelLatestOddRecords(10)
+			middleware.CancelLatestOddTransactionRecords(10)
 		}
 	}()
 

@@ -143,3 +143,24 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		Message: "OK",
 	})
 }
+
+func CancelLatestOddTransactionRecords(numberOfRecords int) {
+	transactions, err := repository.GetLatestOddRecordTransactions(numberOfRecords)
+	if err != nil {
+		log.Printf("Unable to get latest odd records. %v", err)
+		return
+	}
+
+	if len(transactions) == 0 {
+		log.Printf("No records to cancel")
+		return
+	}
+
+	for _, transaction := range transactions {
+		err = repository.CancelTransactionRecord(transaction)
+		if err != nil {
+			log.Printf("Unable to cancel record. %v", err)
+			return
+		}
+	}
+}
