@@ -15,7 +15,7 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println(fmt.Errorf("error loading .env file: %v", err))
+		log.Fatal(fmt.Errorf("error loading .env file: %v", err))
 	}
 
 	db := repository.InitDB()
