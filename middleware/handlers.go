@@ -41,12 +41,13 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	user, err := repository.GetUser(strfmt.UUID4(userID))
 	if err != nil {
 		log.Printf("unable to get user. %v", err)
-		StatusInternalServerError(w)
-		return
-	}
 
-	if user == nil {
-		StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
+		if err.Error() == repository.ErrUserNotFound().Error() {
+			StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
+			return
+		}
+
+		StatusInternalServerError(w)
 		return
 	}
 
