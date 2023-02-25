@@ -11,8 +11,6 @@ All database tables are in `migrations` folder. To run them, use `make` command.
 1. `users` - contains users data
 2. `transaction` - contains transactions data
 
-To run the app, use `make run` command.
-
 ### Endpoints to test:
 
 1. `GET /users` - to get all users
@@ -39,6 +37,16 @@ Amount is a number, can be positive or negative.
 1. `Source-Type: game` - available values: `game`, `server`, `payment`
 
 Postman collection is in `postman` folder to test endpoints.
+
+### To run the app locally:
+
+1. Create `.env` file in root folder and add all required variables from `.env.example` file
+2. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: 63e83104-b9a7-4fec-929e-9d08cae3f9b9)
+3. Run `make run` command to run application
+4. Take a look at `postman` folder to take collection for testing all endpoints
+
+Test user with id `63e83104-b9a7-4fec-929e-9d08cae3f9b9` will be created automatically when you run migrations.
+This user has 50 amount of his balance for testing.
 
 ### To run application in docker container:
 
