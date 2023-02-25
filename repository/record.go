@@ -27,7 +27,9 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 
 	defer func() {
 		if err := tx.Rollback(); err != nil {
-			log.Printf("failed to rollback transaction: %v", err)
+			if err.Error() != "sql: transaction has already been committed or rolled back" {
+				log.Printf("failed to rollback transaction: %v", err)
+			}
 		}
 	}()
 
@@ -134,7 +136,6 @@ func GetLatestOddRecordTransactions(numberOfTransactionRecords int) ([]model.Tra
 			&transaction.UserID,
 			&transaction.Amount,
 			&transaction.CreatedAt,
-			&transaction.UpdatedAt,
 			&transaction.CanceledAt,
 		); err != nil {
 			return transactions, errors.Wrap(err, "failed to scan transaction")
@@ -154,7 +155,9 @@ func CancelTransactionRecord(transaction model.Transaction) error {
 
 	defer func() {
 		if err := tx.Rollback(); err != nil {
-			log.Printf("failed to rollback transaction: %v", err)
+			if err.Error() != "sql: transaction has already been committed or rolled back" {
+				log.Printf("failed to rollback transaction: %v", err)
+			}
 		}
 	}()
 

@@ -30,7 +30,6 @@ func GetAllTransactionsByUserID(userID strfmt.UUID4) ([]model.Transaction, error
 			&transaction.UserID,
 			&transaction.Amount,
 			&transaction.CreatedAt,
-			&transaction.UpdatedAt,
 			&transaction.CanceledAt,
 		)
 		if err != nil {
