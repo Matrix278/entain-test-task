@@ -19,22 +19,17 @@ import (
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := repository.GetAllUsers()
 	if err != nil {
-		log.Printf("Unable to get all users. %v", err)
+		log.Printf("unable to get all users. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(responsemodel.GetAllUsersResponse{
+	StatusOK(w, responsemodel.GetAllUsersResponse{
 		Users: users,
 	})
 }
 
 func GetUserByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	params := mux.Vars(r)
 	userID := params["user_id"]
 
@@ -45,24 +40,20 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	user, err := repository.GetUser(strfmt.UUID4(userID))
 	if err != nil {
-		log.Printf("Unable to get user. %v", err)
+		log.Printf("unable to get user. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
 
 	if user == nil {
-		StatusUnprocessableEntity(w, "user not found")
+		StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(user)
+	StatusOK(w, user)
 }
 
 func GetAllTransactionsByUserID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	params := mux.Vars(r)
 	userID := params["user_id"]
 
@@ -73,22 +64,17 @@ func GetAllTransactionsByUserID(w http.ResponseWriter, r *http.Request) {
 
 	transactions, err := repository.GetAllTransactionsByUserID(strfmt.UUID4(userID))
 	if err != nil {
-		log.Printf("Unable to get transactions. %v", err)
+		log.Printf("unable to get transactions. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(responsemodel.GetAllTransactionsByUserIDResponse{
+	StatusOK(w, responsemodel.GetAllTransactionsByUserIDResponse{
 		Transactions: transactions,
 	})
 }
 
 func ProcessRecord(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var processRecordRequest requestmodel.ProcessRecordRequest
-
 	params := mux.Vars(r)
 	userID := params["user_id"]
 
@@ -97,6 +83,7 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var processRecordRequest requestmodel.ProcessRecordRequest
 	err := json.NewDecoder(r.Body).Decode(&processRecordRequest)
 	if err != nil {
 		typeErr, ok := err.(*json.UnmarshalTypeError)
@@ -107,21 +94,26 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("Unable to decode the request body. %v", err)
+		log.Printf("unable to decode the request body. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
 
 	validationErrors := model.ValidateRequest(processRecordRequest)
 	if validationErrors != nil {
-		log.Printf("Unable to validate request body. %v", validationErrors)
+		log.Printf("unable to validate request body. %v", validationErrors)
 		StatusBadRequestWithErrors(w, "validation error", validationErrors)
 		return
 	}
 
 	err = repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
 	if err != nil {
-		log.Printf("Unable to process record. %v", err)
+		log.Printf("unable to process record. %v", err)
+
+		if err.Error() == repository.ErrUserNotFound().Error() {
+			StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
+			return
+		}
 
 		if err.Error() == repository.ErrInsufficientBalance().Error() {
 			StatusUnprocessableEntity(w, repository.ErrInsufficientBalance().Error())
@@ -137,9 +129,7 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(responsemodel.ProcessRecordResponse{
+	StatusOK(w, responsemodel.ProcessRecordResponse{
 		Message: "OK",
 	})
 }
@@ -147,19 +137,18 @@ func ProcessRecord(w http.ResponseWriter, r *http.Request) {
 func CancelLatestOddTransactionRecords(numberOfRecords int) {
 	transactions, err := repository.GetLatestOddRecordTransactions(numberOfRecords)
 	if err != nil {
-		log.Printf("Unable to get latest odd records. %v", err)
+		log.Printf("unable to get latest odd records. %v", err)
 		return
 	}
 
 	if len(transactions) == 0 {
-		log.Printf("No records to cancel")
+		log.Printf("no records to cancel")
 		return
 	}
 
 	for _, transaction := range transactions {
-		err = repository.CancelTransactionRecord(transaction)
-		if err != nil {
-			log.Printf("Unable to cancel record. %v", err)
+		if err = repository.CancelTransactionRecord(transaction); err != nil {
+			log.Printf("unable to cancel transaction record. %v", err)
 			return
 		}
 	}

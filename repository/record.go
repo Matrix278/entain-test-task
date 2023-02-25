@@ -43,6 +43,10 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 	`,
 		userID,
 	).Scan(&balance); err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return ErrUserNotFound()
+		}
+
 		return errors.Wrap(err, "failed to get user balance")
 	}
 
@@ -195,4 +199,8 @@ func ErrTransactionAlreadyExists() error {
 
 func ErrInsufficientBalance() error {
 	return errors.New("insufficient balance")
+}
+
+func ErrUserNotFound() error {
+	return errors.New("user not found")
 }
