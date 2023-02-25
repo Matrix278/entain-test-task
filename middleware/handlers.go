@@ -152,4 +152,6 @@ func CancelLatestOddTransactionRecords(numberOfRecords int) {
 			return
 		}
 	}
+
+	log.Printf("successfully cancelled %d records", len(transactions))
 }

@@ -106,7 +106,11 @@ func GetLatestOddRecordTransactions(numberOfTransactionRecords int) ([]model.Tra
 		FROM
 			transaction
 		WHERE
-			mod(amount, 2) = 1
+			(
+				mod(amount, 2) = 1
+			OR
+				mod(amount, 2) = -1
+			)
 		AND
 			canceled_at IS NULL 
 		ORDER BY
