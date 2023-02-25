@@ -1,0 +1,122 @@
+{
+	"info": {
+		"_postman_id": "eea2d521-c86c-436b-afcc-b284390773a9",
+		"name": "Entain",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22584450"
+	},
+	"item": [
+		{
+			"name": "Get all users",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Source-Type",
+						"value": "server",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user by ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Source-Type",
+						"value": "game",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/users/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users",
+						"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all transaction by user ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Source-Type",
+						"value": "game",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/transactions/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"transactions",
+						"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Process record",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Source-Type",
+						"value": "payment",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 10,\n    \"transaction_id\": \"64338a05-81e5-426b-b01e-927e447c9e33\",\n    \"state\": \"win\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/process-record/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"process-record",
+						"a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
