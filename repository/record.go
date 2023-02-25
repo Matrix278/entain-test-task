@@ -207,7 +207,3 @@ func ErrTransactionAlreadyExists() error {
 func ErrInsufficientBalance() error {
 	return errors.New("insufficient balance")
 }
-
-func ErrUserNotFound() error {
-	return errors.New("user not found")
-}
