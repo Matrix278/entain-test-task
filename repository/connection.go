@@ -23,12 +23,12 @@ func InitDB() *sql.DB {
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatalf("Unable to connect to database. %v", err)
+		log.Fatalf("unable to connect to database. %v", err)
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatalf("Unable to connect to database. %v", err)
+		log.Fatalf("unable to connect to database. %v", err)
 	}
 
 	fmt.Println("DB successfully connected!")

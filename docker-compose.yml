@@ -4,11 +4,7 @@ services:
     image: golang:latest
     container_name: golang_container
     environment:
-      - POSTGRES_USER=${POSTGRES_DB_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
-      - POSTGRES_DB=${POSTGRES_DB_NAME}
-      - DATABASE_HOST=${POSTGRES_DB_HOST}
-      - DATABASE_PORT=${POSTGRES_DB_PORT}
+      - POSTGRES_DB_HOST=postgresdb
     tty: true
     build:
       context: .
