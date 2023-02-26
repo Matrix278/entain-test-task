@@ -4,7 +4,11 @@ services:
     image: golang:1.19-alpine3.16
     container_name: golang_container
     environment:
+      - POSTGRES_DB_USER=${POSTGRES_DB_USER}
+      - POSTGRES_DB_PASS=${POSTGRES_DB_PASS}
+      - POSTGRES_DB_NAME=${POSTGRES_DB_NAME}
       - POSTGRES_DB_HOST=postgresdb
+      - POSTGRES_DB_PORT=${POSTGRES_DB_PORT}
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,6 +25,11 @@ services:
   postgresdb:
     image: postgres:latest
     restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - DATABASE_PORT=${POSTGRES_DB_PORT}
     container_name: postgres_container
     ports:
       - '1234:${POSTGRES_DB_PORT}'
