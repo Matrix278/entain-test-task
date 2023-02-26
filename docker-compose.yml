@@ -1,6 +1,7 @@
 version: '3.3'
 services:
   app:
+    image: golang:1.19.2-alpine
     container_name: golang_container
     environment:
       - POSTGRES_USER=${POSTGRES_DB_USER}
@@ -11,12 +12,13 @@ services:
     tty: true
     build: .
     ports:
-      - ${SERVER_PORT}:8080
+      - 8080:${SERVER_PORT}
     restart: on-failure
     volumes:
       - .:/app
     depends_on:
       - postgresdb
+      - migrate
 
   postgresdb:
     image: postgres:latest
@@ -32,7 +34,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB_NAME}
       - DATABASE_HOST=${POSTGRES_DB_HOST}
     ports:
-      - '1234:5432'
+      - '1234:${POSTGRES_DB_PORT}'
     volumes:
       - postgres-data-volume:/var/lib/postgresql/data
     healthcheck:
@@ -43,11 +45,17 @@ services:
 
   migrate:
       image: migrate/migrate
+      container_name: migrate_container
+      environment:
+        - POSTGRES_USER=${POSTGRES_DB_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
+        - POSTGRES_DB=${POSTGRES_DB_NAME}
+        - DATABASE_HOST=${POSTGRES_DB_HOST}
       networks:
           - new
       volumes:
           - .:/migrations
-      command: ["-path", "/migrations", "-database",  "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
+      command: ["-path", "./migrations", "-database",  "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@${POSTGRES_DB_HOST}:1234/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
       links: 
           - postgresdb
       depends_on:
