@@ -41,9 +41,10 @@ Postman collection is in `postman` folder to test endpoints.
 ### To run the app locally:
 
 1. Create `.env` file in root folder and add all required variables from `.env.example` file
-2. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: 63e83104-b9a7-4fec-929e-9d08cae3f9b9)
-3. Run `make run` command to run application
-4. Take a look at `postman` folder to take collection for testing all endpoints
+2. To run migrations you should have migrate tool installed. You can install it with `go get -u github.com/golang-migrate/migrate/v4/cmd/migrate` command
+3. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: 63e83104-b9a7-4fec-929e-9d08cae3f9b9)
+4. Run `make run` command to run application
+5. Take a look at `postman` folder to take collection for testing all endpoints
 
 Test user with id `63e83104-b9a7-4fec-929e-9d08cae3f9b9` will be created automatically when you run migrations.
 This user has 50 amount of his balance for testing.
