@@ -16,10 +16,8 @@ services:
     restart: on-failure
     volumes:
       - .:/app
-    # command: ["go", "run", "main.go"]
     depends_on:
       - postgresdb
-      - migrate
 
   postgresdb:
     image: postgres:latest
@@ -44,10 +42,9 @@ services:
       container_name: migrate_container
       networks:
         - new
-      restart: on-failure
       volumes:
-        - .:/migrations
-      command: ["-path", "./migrations", "-database",  "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@postgresdb:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
+        - ./migrations:/migrations
+      command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@postgresdb:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
       links: 
         - postgresdb
       depends_on:
