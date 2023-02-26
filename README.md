@@ -1,5 +1,13 @@
 # Entain test task
 
+### Tools and technologies used:
+
+1. Go
+2. PostgreSQL
+3. Docker
+4. Makefile
+5. Postman
+
 All database tables are in `migrations` folder. To run them, use `make` command.
 
 1. `make migrate-up` - to run up migrations
@@ -43,7 +51,7 @@ Postman collection is in `postman` folder to test endpoints.
 1. Create `.env` file in root folder and add all required variables from `.env.example` file
 2. To run migrations you should have migrate tool installed. You can install it with `brew install golang-migrate` (https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
 3. To run any `make` command you should have `make` tool installed. You can install it with `sudo apt install make` command (https://linuxhint.com/install-make-ubuntu/)
-4. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: 63e83104-b9a7-4fec-929e-9d08cae3f9b9)
+4. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: `63e83104-b9a7-4fec-929e-9d08cae3f9b9`)
 5. Run `make run` command to run application
 6. Take a look at `postman` folder to take collection for testing all endpoints
 
@@ -53,6 +61,6 @@ This user has 50 amount of his balance for testing.
 ## To run application in docker container:
 
 1. Create `.env` file in root folder and add all required variables from `.env.example` file
-2. To run docker container you should have `docker` and `docker-compose` tools installed (Tested on docker version 20.10.22, build 3a2c30b and docker-compose version 1.26.2, build eefe0d31)
+2. To run docker container you should have `docker` and `docker-compose` tools installed (Tested on `docker version 20.10.22, build 3a2c30b` and `docker-compose version 1.26.2, build eefe0d31`)
 3. `docker-compose up` - to run application in docker container
 4. `docker-compose down` - to stop application in docker container
