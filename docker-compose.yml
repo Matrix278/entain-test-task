@@ -1,0 +1,60 @@
+version: '3.3'
+services:
+  app:
+    container_name: golang_container
+    environment:
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - DATABASE_HOST=${POSTGRES_DB_HOST}
+      - DATABASE_PORT=${POSTGRES_DB_PORT}
+    tty: true
+    build: .
+    ports:
+      - ${SERVER_PORT}:8080
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - postgresdb
+
+  postgresdb:
+    image: postgres:latest
+    restart: always
+    networks:
+      new:
+        aliases:
+          - database
+    container_name: postgres_container
+    environment:
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - DATABASE_HOST=${POSTGRES_DB_HOST}
+    ports:
+      - '${POSTGRES_DB_PORT}:5432'
+    volumes:
+      - postgres-data-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_DB_USER} -d ${POSTGRES_DB_NAME}"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+      image: migrate/migrate
+      networks:
+          - new
+      volumes:
+          - .:/migrations
+      command: ["-path", "/migrations", "-database",  "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
+      links: 
+          - postgresdb
+      depends_on:
+          - postgresdb
+
+volumes:
+  postgres-data-volume:
+
+networks:
+  new:
