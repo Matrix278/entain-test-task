@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   app:
-    image: golang:latest
+    image: golang:1.19-alpine3.16
     container_name: golang_container
     environment:
       - POSTGRES_DB_HOST=postgresdb
