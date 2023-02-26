@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   app:
-    image: golang:1.19.2-alpine
+    image: golang:latest
     container_name: golang_container
     environment:
       - POSTGRES_USER=${POSTGRES_DB_USER}
@@ -10,12 +10,16 @@ services:
       - DATABASE_HOST=${POSTGRES_DB_HOST}
       - DATABASE_PORT=${POSTGRES_DB_PORT}
     tty: true
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - 8080:${SERVER_PORT}
     restart: on-failure
     volumes:
       - .:/app
+    working_dir: /app
+    command: "go run /app/main.go"
     depends_on:
       - postgresdb
 
