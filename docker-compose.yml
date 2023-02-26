@@ -16,6 +16,7 @@ services:
     restart: on-failure
     volumes:
       - .:/app
+    # command: ["go", "run", "main.go"]
     depends_on:
       - postgresdb
       - migrate
@@ -28,11 +29,6 @@ services:
         aliases:
           - database
     container_name: postgres_container
-    environment:
-      - POSTGRES_USER=${POSTGRES_DB_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
-      - POSTGRES_DB=${POSTGRES_DB_NAME}
-      - DATABASE_HOST=${POSTGRES_DB_HOST}
     ports:
       - '1234:${POSTGRES_DB_PORT}'
     volumes:
@@ -46,20 +42,16 @@ services:
   migrate:
       image: migrate/migrate
       container_name: migrate_container
-      environment:
-        - POSTGRES_USER=${POSTGRES_DB_USER}
-        - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
-        - POSTGRES_DB=${POSTGRES_DB_NAME}
-        - DATABASE_HOST=${POSTGRES_DB_HOST}
       networks:
-          - new
+        - new
+      restart: on-failure
       volumes:
-          - .:/migrations
-      command: ["-path", "./migrations", "-database",  "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@${POSTGRES_DB_HOST}:1234/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
+        - .:/migrations
+      command: ["-path", "./migrations", "-database",  "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
       links: 
-          - postgresdb
+        - postgresdb
       depends_on:
-          - postgresdb
+        - postgresdb
 
 volumes:
   postgres-data-volume:
