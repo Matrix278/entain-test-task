@@ -38,18 +38,20 @@ Amount is a number, can be positive or negative.
 
 Postman collection is in `postman` folder to test endpoints.
 
-### To run the app locally:
+## To run the app locally:
 
 1. Create `.env` file in root folder and add all required variables from `.env.example` file
-2. To run migrations you should have migrate tool installed. You can install it with `go get -u github.com/golang-migrate/migrate/v4/cmd/migrate` command
-3. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: 63e83104-b9a7-4fec-929e-9d08cae3f9b9)
-4. Run `make run` command to run application
-5. Take a look at `postman` folder to take collection for testing all endpoints
+2. To run migrations you should have migrate tool installed. You can install it with `brew install golang-migrate` (https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
+3. To run any `make` command you should have `make` tool installed. You can install it with `sudo apt install make` command (https://linuxhint.com/install-make-ubuntu/)
+4. Run `make migrate-up` command to run migrations and create all tables with test user (user_id: 63e83104-b9a7-4fec-929e-9d08cae3f9b9)
+5. Run `make run` command to run application
+6. Take a look at `postman` folder to take collection for testing all endpoints
 
 Test user with id `63e83104-b9a7-4fec-929e-9d08cae3f9b9` will be created automatically when you run migrations.
 This user has 50 amount of his balance for testing.
 
-### To run application in docker container:
+## To run application in docker container:
 
-1. `make docker-build` - to build docker image
-2. `make docker-run` - to run docker container
+1. Create `.env` file in root folder and add all required variables from `.env.example` file
+2. To run docker container you should have `docker` and `docker-compose` tools installed
+3. `docker-compose up` - to run application in docker container

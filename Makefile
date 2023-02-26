@@ -14,15 +14,3 @@ migrate-down:
 
 migrate-force:
 	@migrate -path ./migrations -database "${POSTGRES_DATABASEURL}" -verbose force ${version}
-
-docker-build:
-	docker build -t entain .
-
-docker-run:
-	docker run -p ${SERVER_PORT}:8080 --env-file=.env entain
-
-docker-compose-build:
-	docker-compose build
-
-docker-compose-up:
-	docker-compose up
