@@ -62,6 +62,10 @@ func (service *Transaction) ProcessRecord(userID strfmt.UUID4, processRecordRequ
 	// Check if the user has enough balance
 	user, err := service.userRepository.SelectUser(userID)
 	if err != nil {
+		if err.Error() == model.ErrUserNotFound().Error() {
+			return nil, model.ErrUserNotFound()
+		}
+
 		return nil, errors.Wrap(err, "failed to select user")
 	}
 
@@ -77,6 +81,10 @@ func (service *Transaction) ProcessRecord(userID strfmt.UUID4, processRecordRequ
 	}
 
 	if err := service.transactionRepository.Insert(tx, transaction); err != nil {
+		if err.Error() == model.ErrTransactionAlreadyExists().Error() {
+			return nil, model.ErrTransactionAlreadyExists()
+		}
+
 		return nil, errors.Wrap(err, "failed to insert transaction")
 	}
 
