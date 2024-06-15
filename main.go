@@ -9,6 +9,7 @@ import (
 	"github.com/entain-test-task/configuration"
 	"github.com/entain-test-task/middleware"
 	"github.com/entain-test-task/repository"
+	"github.com/entain-test-task/service"
 )
 
 func main() {
@@ -22,10 +23,11 @@ func main() {
 
 	router := middleware.Router(repo)
 
+	transactionService := service.NewTransaction(repo)
 	go func() {
 		for {
 			time.Sleep(time.Duration(cfg.CancelOddRecordsMinutesInterval) * time.Minute)
-			// handlers.CancelLatestOddTransactionRecords(10)
+			transactionService.CancelLatestOddTransactionRecords(10)
 		}
 	}()
 

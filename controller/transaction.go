@@ -8,8 +8,8 @@ import (
 
 	"github.com/entain-test-task/model"
 	requestmodel "github.com/entain-test-task/model/request"
-	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
+	"github.com/entain-test-task/service"
 	"github.com/go-openapi/strfmt"
 	"github.com/gorilla/mux"
 
@@ -17,12 +17,12 @@ import (
 )
 
 type Transaction struct {
-	repository *repository.Store
+	service *service.Transaction
 }
 
-func NewTransaction(repository *repository.Store) *Transaction {
+func NewTransaction(service *service.Transaction) *Transaction {
 	return &Transaction{
-		repository: repository,
+		service: service,
 	}
 }
 
@@ -35,16 +35,14 @@ func (controller *Transaction) GetAllTransactionsByUserID(w http.ResponseWriter,
 		return
 	}
 
-	transactions, err := controller.repository.GetAllTransactionsByUserID(strfmt.UUID4(userID))
+	getAllTransactionsByUserIDResponse, err := controller.service.GetAllTransactionsByUserID(strfmt.UUID4(userID))
 	if err != nil {
 		log.Printf("unable to get transactions. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
 
-	StatusOK(w, responsemodel.GetAllTransactionsByUserIDResponse{
-		Transactions: transactions,
-	})
+	StatusOK(w, getAllTransactionsByUserIDResponse)
 }
 
 func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Request) {
@@ -78,36 +76,13 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err := controller.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest); err != nil {
+	processRecordResponse, err := controller.service.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
+	if err != nil {
 		handleProcessRecordError(w, err)
 		return
 	}
 
-	StatusOK(w, responsemodel.ProcessRecordResponse{
-		Message: "OK",
-	})
-}
-
-func (controller *Transaction) CancelLatestOddTransactionRecords(numberOfRecords int) {
-	transactions, err := controller.repository.GetLatestOddRecordTransactions(numberOfRecords)
-	if err != nil {
-		log.Printf("unable to get latest odd records. %v", err)
-		return
-	}
-
-	if len(transactions) == 0 {
-		log.Printf("no records to cancel")
-		return
-	}
-
-	for _, transaction := range transactions {
-		if err = controller.repository.CancelTransactionRecord(transaction); err != nil {
-			log.Printf("unable to cancel transaction record. %v", err)
-			return
-		}
-	}
-
-	log.Printf("successfully cancelled %d records", len(transactions))
+	StatusOK(w, processRecordResponse)
 }
 
 func handleProcessRecordError(w http.ResponseWriter, err error) {

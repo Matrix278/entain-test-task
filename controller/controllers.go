@@ -17,6 +17,6 @@ func NewControllers(
 ) *Controllers {
 	return &Controllers{
 		User:        NewUser(service.NewUser(repository)),
-		Transaction: NewTransaction(repository),
+		Transaction: NewTransaction(service.NewTransaction(repository)),
 	}
 }
