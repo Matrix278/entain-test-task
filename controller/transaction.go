@@ -59,7 +59,7 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 		typeErr, ok := err.(*json.UnmarshalTypeError)
 		if ok {
 			StatusBadRequestWithErrors(w, "validation error", []error{
-				errors.New(typeErr.Field + " is not is not within allowed range"),
+				errors.New(typeErr.Field + " is not within allowed range"),
 			})
 			return
 		}
