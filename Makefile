@@ -3,6 +3,9 @@ include .env
 run:
 	go run main.go
 
+mod-vendor:
+	go mod vendor
+
 create-migration:
 	@migrate create -ext sql -dir migrations -seq ${name}
 
