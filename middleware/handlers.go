@@ -117,8 +117,7 @@ func (handler *Handler) ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = handler.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
-	if err != nil {
+	if err = handler.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest); err != nil {
 		log.Printf("unable to process record. %v", err)
 
 		if err.Error() == repository.ErrUserNotFound().Error() {
