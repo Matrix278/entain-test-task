@@ -8,50 +8,41 @@ import (
 )
 
 func StatusOK(w http.ResponseWriter, response interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(response)
+	writeJSONResponse(w, http.StatusOK, response)
 }
 
 func StatusInternalServerError(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusInternalServerError)
-
-	json.NewEncoder(w).Encode(model.Error{
+	writeJSONResponse(w, http.StatusInternalServerError, model.Error{
 		Message: "Internal Server Error",
 	})
 }
 
 func StatusBadRequest(w http.ResponseWriter, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
-
-	json.NewEncoder(w).Encode(model.Error{
+	writeJSONResponse(w, http.StatusBadRequest, model.Error{
 		Message: message,
 	})
 }
 
 func StatusUnprocessableEntity(w http.ResponseWriter, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnprocessableEntity)
-
-	json.NewEncoder(w).Encode(model.Error{
+	writeJSONResponse(w, http.StatusUnprocessableEntity, model.Error{
 		Message: message,
 	})
 }
 
 func StatusBadRequestWithErrors(w http.ResponseWriter, message string, validationErrors []error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
-
 	errorDetails := make([]string, 0)
 	for _, validationError := range validationErrors {
 		errorDetails = append(errorDetails, validationError.Error())
 	}
 
-	json.NewEncoder(w).Encode(model.Error{
+	writeJSONResponse(w, http.StatusBadRequest, model.Error{
 		Message: message,
 		Errors:  errorDetails,
 	})
+}
+
+func writeJSONResponse(w http.ResponseWriter, statusCode int, response interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(response)
 }
