@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"log"
 	"time"
 
@@ -56,13 +57,7 @@ func (service *Transaction) ProcessRecord(userID strfmt.UUID4, processRecordRequ
 		return nil, errors.Wrap(err, "failed to begin transaction")
 	}
 
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			if err.Error() != "sql: transaction has already been committed or rolled back" {
-				log.Printf("failed to rollback transaction: %v", err)
-			}
-		}
-	}()
+	defer service.rollbackTransaction(tx)
 
 	// Check if the user has enough balance
 	user, err := service.userRepository.SelectUser(userID)
@@ -127,13 +122,7 @@ func (service *Transaction) cancelTransactionRecord(transaction model.Transactio
 		return errors.Wrap(err, "failed to begin transaction")
 	}
 
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			if err.Error() != "sql: transaction has already been committed or rolled back" {
-				log.Printf("failed to rollback transaction: %v", err)
-			}
-		}
-	}()
+	defer service.rollbackTransaction(tx)
 
 	// Cancel the transaction
 	today := time.Now()
@@ -152,4 +141,12 @@ func (service *Transaction) cancelTransactionRecord(transaction model.Transactio
 	}
 
 	return nil
+}
+
+func (service *Transaction) rollbackTransaction(tx *sql.Tx) {
+	if err := tx.Rollback(); err != nil {
+		if err.Error() != "sql: transaction has already been committed or rolled back" {
+			log.Printf("failed to rollback transaction: %v", err)
+		}
+	}
 }
