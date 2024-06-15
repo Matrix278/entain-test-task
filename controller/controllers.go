@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/entain-test-task/repository"
+	"github.com/entain-test-task/service"
 
 	_ "github.com/lib/pq"
 )
@@ -15,7 +16,7 @@ func NewControllers(
 	repository *repository.Store,
 ) *Controllers {
 	return &Controllers{
-		User:        NewUser(repository),
+		User:        NewUser(service.NewUser(repository)),
 		Transaction: NewTransaction(repository),
 	}
 }

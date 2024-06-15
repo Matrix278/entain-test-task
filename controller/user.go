@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	responsemodel "github.com/entain-test-task/model/response"
-	"github.com/entain-test-task/repository"
+	"github.com/entain-test-task/model"
+	"github.com/entain-test-task/service"
 	"github.com/go-openapi/strfmt"
 	"github.com/gorilla/mux"
 
@@ -13,26 +13,24 @@ import (
 )
 
 type User struct {
-	repository *repository.Store
+	service *service.User
 }
 
-func NewUser(repository *repository.Store) *User {
+func NewUser(service *service.User) *User {
 	return &User{
-		repository: repository,
+		service: service,
 	}
 }
 
 func (controller *User) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := controller.repository.GetAllUsers()
+	getAllUsersResponse, err := controller.service.GetAllUsers()
 	if err != nil {
 		log.Printf("unable to get all users. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
 
-	StatusOK(w, responsemodel.GetAllUsersResponse{
-		Users: users,
-	})
+	StatusOK(w, getAllUsersResponse)
 }
 
 func (controller *User) GetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -44,15 +42,14 @@ func (controller *User) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := controller.repository.GetUser(strfmt.UUID4(userID))
+	user, err := controller.service.GetUser(strfmt.UUID4(userID))
 	if err != nil {
-		log.Printf("unable to get user. %v", err)
-
-		if err.Error() == repository.ErrUserNotFound().Error() {
-			StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
+		if err.Error() == model.ErrUserNotFound().Error() {
+			StatusUnprocessableEntity(w, model.ErrUserNotFound().Error())
 			return
 		}
 
+		log.Printf("unable to get user. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
