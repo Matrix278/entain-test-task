@@ -21,9 +21,7 @@ func main() {
 	repo := repository.NewStore()
 	defer repo.Close()
 
-	handlers := middleware.NewHandler(repo)
-
-	router := middleware.Router(handlers)
+	router := middleware.Router(repo)
 
 	nMinutes, err := strconv.Atoi(os.Getenv("CANCEL_ODD_RECORDS_MINUTES_INTERVAL"))
 	if err != nil {
@@ -33,7 +31,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Duration(nMinutes) * time.Minute)
-			handlers.CancelLatestOddTransactionRecords(10)
+			// handlers.CancelLatestOddTransactionRecords(10)
 		}
 	}()
 

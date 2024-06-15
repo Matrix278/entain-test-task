@@ -1,4 +1,4 @@
-package middleware
+package controller
 
 import (
 	"encoding/json"
@@ -16,18 +16,18 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type Handler struct {
+type User struct {
 	repository *repository.Store
 }
 
-func NewHandler(repository *repository.Store) *Handler {
-	return &Handler{
+func NewUser(repository *repository.Store) *User {
+	return &User{
 		repository: repository,
 	}
 }
 
-func (handler *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := handler.repository.GetAllUsers()
+func (controller *User) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := controller.repository.GetAllUsers()
 	if err != nil {
 		log.Printf("unable to get all users. %v", err)
 		StatusInternalServerError(w)
@@ -39,7 +39,7 @@ func (handler *Handler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (handler *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
+func (controller *User) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userID := params["user_id"]
 
@@ -48,7 +48,7 @@ func (handler *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := handler.repository.GetUser(strfmt.UUID4(userID))
+	user, err := controller.repository.GetUser(strfmt.UUID4(userID))
 	if err != nil {
 		log.Printf("unable to get user. %v", err)
 
@@ -64,7 +64,7 @@ func (handler *Handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	StatusOK(w, user)
 }
 
-func (handler *Handler) GetAllTransactionsByUserID(w http.ResponseWriter, r *http.Request) {
+func (controller *User) GetAllTransactionsByUserID(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userID := params["user_id"]
 
@@ -73,7 +73,7 @@ func (handler *Handler) GetAllTransactionsByUserID(w http.ResponseWriter, r *htt
 		return
 	}
 
-	transactions, err := handler.repository.GetAllTransactionsByUserID(strfmt.UUID4(userID))
+	transactions, err := controller.repository.GetAllTransactionsByUserID(strfmt.UUID4(userID))
 	if err != nil {
 		log.Printf("unable to get transactions. %v", err)
 		StatusInternalServerError(w)
@@ -85,7 +85,7 @@ func (handler *Handler) GetAllTransactionsByUserID(w http.ResponseWriter, r *htt
 	})
 }
 
-func (handler *Handler) ProcessRecord(w http.ResponseWriter, r *http.Request) {
+func (controller *User) ProcessRecord(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userID := params["user_id"]
 
@@ -116,7 +116,7 @@ func (handler *Handler) ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := handler.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest); err != nil {
+	if err := controller.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest); err != nil {
 		handleProcessRecordError(w, err)
 		return
 	}
@@ -126,8 +126,8 @@ func (handler *Handler) ProcessRecord(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (handler *Handler) CancelLatestOddTransactionRecords(numberOfRecords int) {
-	transactions, err := handler.repository.GetLatestOddRecordTransactions(numberOfRecords)
+func (controller *User) CancelLatestOddTransactionRecords(numberOfRecords int) {
+	transactions, err := controller.repository.GetLatestOddRecordTransactions(numberOfRecords)
 	if err != nil {
 		log.Printf("unable to get latest odd records. %v", err)
 		return
@@ -139,7 +139,7 @@ func (handler *Handler) CancelLatestOddTransactionRecords(numberOfRecords int) {
 	}
 
 	for _, transaction := range transactions {
-		if err = handler.repository.CancelTransactionRecord(transaction); err != nil {
+		if err = controller.repository.CancelTransactionRecord(transaction); err != nil {
 			log.Printf("unable to cancel transaction record. %v", err)
 			return
 		}
