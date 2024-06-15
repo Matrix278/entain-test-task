@@ -5,6 +5,7 @@ import (
 
 	"github.com/entain-test-task/controller"
 	"github.com/entain-test-task/model"
+	"github.com/entain-test-task/model/enum"
 	"github.com/entain-test-task/repository"
 	"github.com/gorilla/mux"
 )
@@ -26,7 +27,7 @@ func Router(repository *repository.Store) *mux.Router {
 
 func validateSourceHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !model.IsArrayContainsValue(model.SourceTypes, r.Header.Get("Source-Type")) {
+		if !model.IsArrayContainsValue(enum.SourceTypes, r.Header.Get("Source-Type")) {
 			controller.StatusBadRequest(w, "Source-Type header is not valid")
 			return
 		}

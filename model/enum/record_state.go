@@ -1,4 +1,4 @@
-package model
+package enum
 
 type RecordState string
 
@@ -7,7 +7,7 @@ const (
 	RecordStateLose RecordState = "lose"
 )
 
-var recordStateValues = []string{
+var RecordStates = []string{
 	string(RecordStateWin),
 	string(RecordStateLose),
 }

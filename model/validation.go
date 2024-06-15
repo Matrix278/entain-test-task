@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 
+	enum "github.com/entain-test-task/model/enum"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -50,7 +51,7 @@ func ValidateRequest(request interface{}) []error {
 }
 
 func recordStateValidator(fl validator.FieldLevel) bool {
-	return IsArrayContainsValue(recordStateValues, fl.Field().String())
+	return IsArrayContainsValue(enum.RecordStates, fl.Field().String())
 }
 
 func translateError(err error) (errs []error) {

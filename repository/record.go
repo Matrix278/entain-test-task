@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/entain-test-task/model"
+	"github.com/entain-test-task/model/enum"
 	requestmodel "github.com/entain-test-task/model/request"
 	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
@@ -14,9 +15,9 @@ func (repository *Store) ProcessRecord(userID strfmt.UUID4, processRecordRequest
 	var amount float64
 
 	switch processRecordRequest.State {
-	case model.RecordStateWin:
+	case enum.RecordStateWin:
 		amount = processRecordRequest.Amount
-	case model.RecordStateLose:
+	case enum.RecordStateLose:
 		amount = -processRecordRequest.Amount
 	}
 
