@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/entain-test-task/model"
 	"github.com/go-openapi/strfmt"
@@ -72,7 +73,7 @@ func (repository *Transaction) Insert(tx *sql.Tx, transaction model.Transaction)
 		transaction.ID,
 		transaction.UserID,
 		transaction.Amount,
-		transaction.CreatedAt,
+		time.Now(),
 	); err != nil {
 		if err.Error() == "pq: duplicate key value violates unique constraint \"transaction_pkey\"" {
 			return model.ErrTransactionAlreadyExists()
@@ -95,14 +96,12 @@ func (repository *Transaction) Update(tx *sql.Tx, transaction model.Transaction)
 		SET
 			user_id = $1,
 			amount = $2,
-			created_at = $3,
-			canceled_at = $4
+			canceled_at = $3
 		WHERE
-			id = $5
+			id = $4
 	`,
 		transaction.UserID,
 		transaction.Amount,
-		transaction.CreatedAt,
 		transaction.CanceledAt,
 		transaction.ID,
 	); err != nil {
