@@ -47,14 +47,14 @@ func (repository *Store) ProcessRecord(userID strfmt.UUID4, processRecordRequest
 		userID,
 	).Scan(&balance); err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return ErrUserNotFound()
+			return model.ErrUserNotFound()
 		}
 
 		return errors.Wrap(err, "failed to get user balance")
 	}
 
 	if balance+amount < 0 {
-		return ErrInsufficientBalance()
+		return model.ErrInsufficientBalance()
 	}
 
 	// Insert the transaction
@@ -70,7 +70,7 @@ func (repository *Store) ProcessRecord(userID strfmt.UUID4, processRecordRequest
 		time.Now(),
 	); err != nil {
 		if err.Error() == "pq: duplicate key value violates unique constraint \"transaction_pkey\"" {
-			return ErrTransactionAlreadyExists()
+			return model.ErrTransactionAlreadyExists()
 		}
 
 		return errors.Wrap(err, "failed to insert transaction")
@@ -199,12 +199,4 @@ func (repository *Store) CancelTransactionRecord(transaction model.Transaction) 
 	}
 
 	return nil
-}
-
-func ErrTransactionAlreadyExists() error {
-	return errors.New("transaction already exists")
-}
-
-func ErrInsufficientBalance() error {
-	return errors.New("insufficient balance")
 }

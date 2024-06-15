@@ -8,7 +8,6 @@ import (
 
 	"github.com/entain-test-task/model"
 	requestmodel "github.com/entain-test-task/model/request"
-	"github.com/entain-test-task/repository"
 	"github.com/entain-test-task/service"
 	"github.com/go-openapi/strfmt"
 	"github.com/gorilla/mux"
@@ -87,12 +86,12 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 
 func handleProcessRecordError(w http.ResponseWriter, err error) {
 	switch err.Error() {
-	case repository.ErrUserNotFound().Error():
-		StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
-	case repository.ErrInsufficientBalance().Error():
-		StatusUnprocessableEntity(w, repository.ErrInsufficientBalance().Error())
-	case repository.ErrTransactionAlreadyExists().Error():
-		StatusUnprocessableEntity(w, repository.ErrTransactionAlreadyExists().Error())
+	case model.ErrUserNotFound().Error():
+		StatusUnprocessableEntity(w, model.ErrUserNotFound().Error())
+	case model.ErrInsufficientBalance().Error():
+		StatusUnprocessableEntity(w, model.ErrInsufficientBalance().Error())
+	case model.ErrTransactionAlreadyExists().Error():
+		StatusUnprocessableEntity(w, model.ErrTransactionAlreadyExists().Error())
 	default:
 		log.Printf("%s. %v", "unable to process record", err)
 		StatusInternalServerError(w)
