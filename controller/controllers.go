@@ -7,13 +7,15 @@ import (
 )
 
 type Controllers struct {
-	User *User
+	User        *User
+	Transaction *Transaction
 }
 
 func NewControllers(
 	repository *repository.Store,
 ) *Controllers {
 	return &Controllers{
-		User: NewUser(repository),
+		User:        NewUser(repository),
+		Transaction: NewTransaction(repository),
 	}
 }

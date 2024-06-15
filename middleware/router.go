@@ -18,8 +18,8 @@ func Router(repository *repository.Store) *mux.Router {
 
 	router.HandleFunc("/users", controllers.User.GetAllUsers).Methods("GET")
 	router.HandleFunc("/users/{user_id}", controllers.User.GetUserByID).Methods("GET")
-	router.HandleFunc("/transactions/{user_id}", controllers.User.GetAllTransactionsByUserID).Methods("GET")
-	router.HandleFunc("/process-record/{user_id}", controllers.User.ProcessRecord).Methods("POST")
+	router.HandleFunc("/transactions/{user_id}", controllers.Transaction.GetAllTransactionsByUserID).Methods("GET")
+	router.HandleFunc("/process-record/{user_id}", controllers.Transaction.ProcessRecord).Methods("POST")
 
 	return router
 }
