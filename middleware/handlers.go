@@ -95,8 +95,7 @@ func (handler *Handler) ProcessRecord(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var processRecordRequest requestmodel.ProcessRecordRequest
-	err := json.NewDecoder(r.Body).Decode(&processRecordRequest)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&processRecordRequest); err != nil {
 		typeErr, ok := err.(*json.UnmarshalTypeError)
 		if ok {
 			StatusBadRequestWithErrors(w, "validation error", []error{
@@ -117,25 +116,8 @@ func (handler *Handler) ProcessRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = handler.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest); err != nil {
-		log.Printf("unable to process record. %v", err)
-
-		if err.Error() == repository.ErrUserNotFound().Error() {
-			StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
-			return
-		}
-
-		if err.Error() == repository.ErrInsufficientBalance().Error() {
-			StatusUnprocessableEntity(w, repository.ErrInsufficientBalance().Error())
-			return
-		}
-
-		if err.Error() == repository.ErrTransactionAlreadyExists().Error() {
-			StatusUnprocessableEntity(w, repository.ErrTransactionAlreadyExists().Error())
-			return
-		}
-
-		StatusInternalServerError(w)
+	if err := handler.repository.ProcessRecord(strfmt.UUID4(userID), processRecordRequest); err != nil {
+		handleProcessRecordError(w, err)
 		return
 	}
 
@@ -164,4 +146,18 @@ func (handler *Handler) CancelLatestOddTransactionRecords(numberOfRecords int) {
 	}
 
 	log.Printf("successfully cancelled %d records", len(transactions))
+}
+
+func handleProcessRecordError(w http.ResponseWriter, err error) {
+	switch err.Error() {
+	case repository.ErrUserNotFound().Error():
+		StatusUnprocessableEntity(w, repository.ErrUserNotFound().Error())
+	case repository.ErrInsufficientBalance().Error():
+		StatusUnprocessableEntity(w, repository.ErrInsufficientBalance().Error())
+	case repository.ErrTransactionAlreadyExists().Error():
+		StatusUnprocessableEntity(w, repository.ErrTransactionAlreadyExists().Error())
+	default:
+		log.Printf("%s. %v", "unable to process record", err)
+		StatusInternalServerError(w)
+	}
 }
