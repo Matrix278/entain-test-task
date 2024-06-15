@@ -18,12 +18,16 @@ func main() {
 		log.Fatal(fmt.Errorf("error loading configuration: %v", err))
 	}
 
-	repo := repository.NewStore(cfg)
-	defer repo.Close()
+	store := repository.NewStore(cfg)
+	defer store.Close()
 
-	router := middleware.Router(repo)
+	router := middleware.Router(store)
 
-	transactionService := service.NewTransaction(repo)
+	// TODO: Refactor the go routine to a separate function
+	userRepo := repository.NewUser(store)
+	transactionRepo := repository.NewTransaction(store)
+
+	transactionService := service.NewTransaction(transactionRepo, userRepo)
 	go func() {
 		for {
 			time.Sleep(time.Duration(cfg.CancelOddRecordsMinutesInterval) * time.Minute)

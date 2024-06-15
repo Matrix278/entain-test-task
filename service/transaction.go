@@ -2,27 +2,36 @@ package service
 
 import (
 	"log"
+	"time"
 
+	"github.com/entain-test-task/model"
+	"github.com/entain-test-task/model/enum"
 	requestmodel "github.com/entain-test-task/model/request"
 	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
 	"github.com/go-openapi/strfmt"
+	"github.com/pkg/errors"
 
 	_ "github.com/lib/pq"
 )
 
 type Transaction struct {
-	repository *repository.Store
+	transactionRepository *repository.Transaction
+	userRepository        *repository.User
 }
 
-func NewTransaction(repository *repository.Store) *Transaction {
+func NewTransaction(
+	transactionRepository *repository.Transaction,
+	userRepository *repository.User,
+) *Transaction {
 	return &Transaction{
-		repository: repository,
+		transactionRepository: transactionRepository,
+		userRepository:        userRepository,
 	}
 }
 
 func (service *Transaction) GetAllTransactionsByUserID(userID strfmt.UUID4) (*responsemodel.GetAllTransactionsByUserIDResponse, error) {
-	transactions, err := service.repository.GetAllTransactionsByUserID(userID)
+	transactions, err := service.transactionRepository.SelectTransactionsByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +42,56 @@ func (service *Transaction) GetAllTransactionsByUserID(userID strfmt.UUID4) (*re
 }
 
 func (service *Transaction) ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.ProcessRecordRequest) (*responsemodel.ProcessRecordResponse, error) {
-	if err := service.repository.ProcessRecord(userID, processRecordRequest); err != nil {
-		return nil, err
+	var amount float64
+
+	switch processRecordRequest.State {
+	case enum.RecordStateWin:
+		amount = processRecordRequest.Amount
+	case enum.RecordStateLose:
+		amount = -processRecordRequest.Amount
+	}
+
+	tx, err := service.transactionRepository.Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to begin transaction")
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			if err.Error() != "sql: transaction has already been committed or rolled back" {
+				log.Printf("failed to rollback transaction: %v", err)
+			}
+		}
+	}()
+
+	// Check if the user has enough balance
+	user, err := service.userRepository.SelectUser(userID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to select user")
+	}
+
+	if user.Balance+amount < 0 {
+		return nil, model.ErrInsufficientBalance()
+	}
+
+	// Insert the transaction record
+	transaction := model.Transaction{
+		ID:     processRecordRequest.TransactionID,
+		UserID: userID,
+		Amount: amount,
+	}
+
+	if err := service.transactionRepository.Insert(tx, transaction); err != nil {
+		return nil, errors.Wrap(err, "failed to insert transaction")
+	}
+
+	// Update the user balance
+	if err := service.userRepository.UpdateUserBalance(tx, userID, amount); err != nil {
+		return nil, errors.Wrap(err, "failed to update user balance")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return &responsemodel.ProcessRecordResponse{
@@ -43,9 +100,9 @@ func (service *Transaction) ProcessRecord(userID strfmt.UUID4, processRecordRequ
 }
 
 func (service *Transaction) CancelLatestOddTransactionRecords(numberOfRecords int) {
-	transactions, err := service.repository.GetLatestOddRecordTransactions(numberOfRecords)
+	transactions, err := service.transactionRepository.SelectLatestOddRecordTransactions(numberOfRecords)
 	if err != nil {
-		log.Printf("unable to get latest odd records. %v", err)
+		log.Printf("unable to select latest odd record transactions. %v", err)
 		return
 	}
 
@@ -55,11 +112,44 @@ func (service *Transaction) CancelLatestOddTransactionRecords(numberOfRecords in
 	}
 
 	for _, transaction := range transactions {
-		if err = service.repository.CancelTransactionRecord(transaction); err != nil {
+		if err = service.cancelTransactionRecord(transaction); err != nil {
 			log.Printf("unable to cancel transaction record. %v", err)
 			return
 		}
 	}
 
 	log.Printf("successfully cancelled %d records", len(transactions))
+}
+
+func (service *Transaction) cancelTransactionRecord(transaction model.Transaction) error {
+	tx, err := service.transactionRepository.Begin()
+	if err != nil {
+		return errors.Wrap(err, "failed to begin transaction")
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			if err.Error() != "sql: transaction has already been committed or rolled back" {
+				log.Printf("failed to rollback transaction: %v", err)
+			}
+		}
+	}()
+
+	// Cancel the transaction
+	today := time.Now()
+	transaction.CanceledAt = &today
+	if err := service.transactionRepository.Update(tx, transaction); err != nil {
+		return errors.Wrap(err, "failed to cancel transaction")
+	}
+
+	// Refund the user balance
+	if err := service.userRepository.UpdateUserBalance(tx, transaction.UserID, -transaction.Amount); err != nil {
+		return errors.Wrap(err, "failed to update user balance")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
+	}
+
+	return nil
 }

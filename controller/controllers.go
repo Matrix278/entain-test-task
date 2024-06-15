@@ -12,11 +12,15 @@ type Controllers struct {
 	Transaction *Transaction
 }
 
-func NewControllers(
-	repository *repository.Store,
-) *Controllers {
+func NewControllers(store *repository.Store) *Controllers {
+	userRepo := repository.NewUser(store)
+	transactionRepo := repository.NewTransaction(store)
+
+	userService := service.NewUser(userRepo)
+	transactionService := service.NewTransaction(transactionRepo, userRepo)
+
 	return &Controllers{
-		User:        NewUser(service.NewUser(repository)),
-		Transaction: NewTransaction(service.NewTransaction(repository)),
+		User:        NewUser(userService),
+		Transaction: NewTransaction(transactionService),
 	}
 }

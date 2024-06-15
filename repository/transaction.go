@@ -18,6 +18,10 @@ func NewTransaction(store *Store) *Transaction {
 	}
 }
 
+func (repository *Transaction) Begin() (*sql.Tx, error) {
+	return repository.store.db.Begin()
+}
+
 func (repository *Transaction) SelectTransactionsByUserID(userID strfmt.UUID4) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 
@@ -70,6 +74,10 @@ func (repository *Transaction) Insert(tx *sql.Tx, transaction model.Transaction)
 		transaction.Amount,
 		transaction.CreatedAt,
 	); err != nil {
+		if err.Error() == "pq: duplicate key value violates unique constraint \"transaction_pkey\"" {
+			return model.ErrTransactionAlreadyExists()
+		}
+
 		return errors.Wrap(err, "failed to insert transaction")
 	}
 

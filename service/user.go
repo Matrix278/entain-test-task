@@ -10,17 +10,17 @@ import (
 )
 
 type User struct {
-	repository *repository.Store
+	userRepository *repository.User
 }
 
-func NewUser(repository *repository.Store) *User {
+func NewUser(userRepository *repository.User) *User {
 	return &User{
-		repository: repository,
+		userRepository: userRepository,
 	}
 }
 
 func (service *User) GetAllUsers() (*responsemodel.GetAllUsersResponse, error) {
-	users, err := service.repository.GetAllUsers()
+	users, err := service.userRepository.SelectUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (service *User) GetAllUsers() (*responsemodel.GetAllUsersResponse, error) {
 }
 
 func (service *User) GetUser(userID strfmt.UUID4) (*responsemodel.GetUserResponse, error) {
-	user, err := service.repository.GetUser(userID)
+	user, err := service.userRepository.SelectUser(userID)
 	if err != nil {
 		if err.Error() == model.ErrUserNotFound().Error() {
 			return nil, model.ErrUserNotFound()
