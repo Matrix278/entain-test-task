@@ -87,7 +87,7 @@ func (repository *User) UpdateUserBalance(tx *sql.Tx, userID strfmt.UUID4, amoun
 		UPDATE
 			users
 		SET
-			balance = balance + $1
+			balance = balance + $1,
 			updated_at = $2
 		WHERE
 			id = $3
