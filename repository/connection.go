@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
+	"github.com/entain-test-task/configuration"
 	_ "github.com/lib/pq"
 )
 
@@ -13,16 +13,8 @@ type Store struct {
 	db *sql.DB
 }
 
-func NewStore() *Store {
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_DB_HOST"),
-		os.Getenv("POSTGRES_DB_PORT"),
-		os.Getenv("POSTGRES_DB_USER"),
-		os.Getenv("POSTGRES_DB_PASS"),
-		os.Getenv("POSTGRES_DB_NAME"),
-	)
-
-	db, err := sql.Open("postgres", psqlInfo)
+func NewStore(cfg configuration.Config) *Store {
+	db, err := sql.Open("postgres", cfg.PostgresDatabaseURL)
 	if err != nil {
 		log.Fatalf("unable to connect to database. %v", err)
 	}
@@ -31,7 +23,7 @@ func NewStore() *Store {
 		log.Fatalf("unable to connect to database. %v", err)
 	}
 
-	fmt.Println("DB successfully connected!")
+	fmt.Println("Database successfully connected!")
 
 	return &Store{
 		db: db,
