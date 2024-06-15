@@ -6,10 +6,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GetAllTransactionsByUserID(userID strfmt.UUID4) ([]model.Transaction, error) {
+func (repository *Store) GetAllTransactionsByUserID(userID strfmt.UUID4) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 
-	rows, err := DB.Query(`
+	rows, err := repository.db.Query(`
 		SELECT
 			*
 		FROM

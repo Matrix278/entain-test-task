@@ -9,10 +9,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var DB *sql.DB
+type Store struct {
+	db *sql.DB
+}
 
-// InitDB will initialize the database
-func InitDB() *sql.DB {
+func NewStore() *Store {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("POSTGRES_DB_HOST"),
 		os.Getenv("POSTGRES_DB_PORT"),
@@ -26,13 +27,17 @@ func InitDB() *sql.DB {
 		log.Fatalf("unable to connect to database. %v", err)
 	}
 
-	err = db.Ping()
-	if err != nil {
+	if err = db.Ping(); err != nil {
 		log.Fatalf("unable to connect to database. %v", err)
 	}
 
 	fmt.Println("DB successfully connected!")
-	DB = db
 
-	return db
+	return &Store{
+		db: db,
+	}
+}
+
+func (repository *Store) Close() {
+	repository.db.Close()
 }

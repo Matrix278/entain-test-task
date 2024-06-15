@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.ProcessRecordRequest) error {
+func (repository *Store) ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.ProcessRecordRequest) error {
 	var amount float64
 
 	switch processRecordRequest.State {
@@ -20,7 +20,7 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 		amount = -processRecordRequest.Amount
 	}
 
-	tx, err := DB.Begin()
+	tx, err := repository.db.Begin()
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}
@@ -99,10 +99,10 @@ func ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.Proces
 	return nil
 }
 
-func GetLatestOddRecordTransactions(numberOfTransactionRecords int) ([]model.Transaction, error) {
+func (repository *Store) GetLatestOddRecordTransactions(numberOfTransactionRecords int) ([]model.Transaction, error) {
 	var transactions []model.Transaction
 
-	rows, err := DB.Query(`
+	rows, err := repository.db.Query(`
 		SELECT
 			*
 		FROM
@@ -147,8 +147,8 @@ func GetLatestOddRecordTransactions(numberOfTransactionRecords int) ([]model.Tra
 	return transactions, nil
 }
 
-func CancelTransactionRecord(transaction model.Transaction) error {
-	tx, err := DB.Begin()
+func (repository *Store) CancelTransactionRecord(transaction model.Transaction) error {
+	tx, err := repository.db.Begin()
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}

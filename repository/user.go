@@ -7,10 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func GetAllUsers() ([]model.User, error) {
+func (repository *Store) GetAllUsers() ([]model.User, error) {
 	var users []model.User
 
-	rows, err := DB.Query(`
+	rows, err := repository.db.Query(`
 		SELECT
 			*
 		FROM
@@ -38,10 +38,10 @@ func GetAllUsers() ([]model.User, error) {
 	return users, nil
 }
 
-func GetUser(userID strfmt.UUID4) (*model.User, error) {
+func (repository *Store) GetUser(userID strfmt.UUID4) (*model.User, error) {
 	var user model.User
 
-	err := DB.QueryRow(`
+	if err := repository.db.QueryRow(`
 		SELECT
 			*
 		FROM
@@ -50,8 +50,7 @@ func GetUser(userID strfmt.UUID4) (*model.User, error) {
 			id = $1
 	`,
 		userID,
-	).Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt)
-	if err != nil {
+	).Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			return nil, ErrUserNotFound()
 		}

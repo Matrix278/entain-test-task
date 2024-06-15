@@ -18,10 +18,12 @@ func main() {
 		log.Fatal(fmt.Errorf("error loading .env file: %v", err))
 	}
 
-	db := repository.InitDB()
-	defer db.Close()
+	repo := repository.NewStore()
+	defer repo.Close()
 
-	router := middleware.Router()
+	handlers := middleware.NewHandler(repo)
+
+	router := middleware.Router(handlers)
 
 	nMinutes, err := strconv.Atoi(os.Getenv("CANCEL_ODD_RECORDS_MINUTES_INTERVAL"))
 	if err != nil {
@@ -31,7 +33,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Duration(nMinutes) * time.Minute)
-			middleware.CancelLatestOddTransactionRecords(10)
+			handlers.CancelLatestOddTransactionRecords(10)
 		}
 	}()
 
