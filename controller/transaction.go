@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/entain-test-task/configuration"
 	"github.com/entain-test-task/model"
 	requestmodel "github.com/entain-test-task/model/request"
 	"github.com/entain-test-task/service"
@@ -16,11 +17,16 @@ import (
 )
 
 type Transaction struct {
+	cfg     *configuration.Config
 	service *service.Transaction
 }
 
-func NewTransaction(service *service.Transaction) *Transaction {
+func NewTransaction(
+	cfg *configuration.Config,
+	service *service.Transaction,
+) *Transaction {
 	return &Transaction{
+		cfg:     cfg,
 		service: service,
 	}
 }
@@ -82,6 +88,10 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 	}
 
 	StatusOK(w, processRecordResponse)
+}
+
+func (controller *Transaction) CancelLatestOddTransactionRecords() {
+	controller.service.CancelLatestOddTransactionRecords(controller.cfg.NumberOfLatestRecordsForCancelling)
 }
 
 func handleProcessRecordError(w http.ResponseWriter, err error) {

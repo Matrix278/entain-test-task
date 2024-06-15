@@ -7,31 +7,33 @@ import (
 )
 
 type Config struct {
-	PostgresDBHost                  string
-	PostgresDBPort                  string
-	PostgresDBUser                  string
-	PostgresDBPass                  string
-	PostgresDBName                  string
-	PostgresDatabaseURL             string
-	CancelOddRecordsMinutesInterval int
-	ServerPort                      string
+	PostgresDBHost                     string
+	PostgresDBPort                     string
+	PostgresDBUser                     string
+	PostgresDBPass                     string
+	PostgresDBName                     string
+	PostgresDatabaseURL                string
+	CancelOddRecordsMinutesInterval    int
+	NumberOfLatestRecordsForCancelling int
+	ServerPort                         string
 }
 
-func Load() (config Config, err error) {
+func Load() (config *Config, err error) {
 	if err := godotenv.Load(); err != nil {
-		return Config{}, err
+		return nil, err
 	}
 
 	viper.AutomaticEnv()
 
-	config.PostgresDBHost = viper.GetString("POSTGRES_DB_HOST")
-	config.PostgresDBPort = viper.GetString("POSTGRES_DB_PORT")
-	config.PostgresDBUser = viper.GetString("POSTGRES_DB_USER")
-	config.PostgresDBPass = viper.GetString("POSTGRES_DB_PASS")
-	config.PostgresDBName = viper.GetString("POSTGRES_DB_NAME")
-	config.PostgresDatabaseURL = viper.GetString("POSTGRES_DATABASEURL")
-	config.CancelOddRecordsMinutesInterval = viper.GetInt("CANCEL_ODD_RECORDS_MINUTES_INTERVAL")
-	config.ServerPort = viper.GetString("SERVER_PORT")
-
-	return
+	return &Config{
+		PostgresDBHost:                     viper.GetString("POSTGRES_DB_HOST"),
+		PostgresDBPort:                     viper.GetString("POSTGRES_DB_PORT"),
+		PostgresDBUser:                     viper.GetString("POSTGRES_DB_USER"),
+		PostgresDBPass:                     viper.GetString("POSTGRES_DB_PASS"),
+		PostgresDBName:                     viper.GetString("POSTGRES_DB_NAME"),
+		PostgresDatabaseURL:                viper.GetString("POSTGRES_DATABASEURL"),
+		CancelOddRecordsMinutesInterval:    viper.GetInt("CANCEL_ODD_RECORDS_MINUTES_INTERVAL"),
+		NumberOfLatestRecordsForCancelling: viper.GetInt("NUMBER_OF_LATEST_RECORDS_FOR_CANCELLING"),
+		ServerPort:                         viper.GetString("SERVER_PORT"),
+	}, nil
 }

@@ -6,14 +6,11 @@ import (
 	"github.com/entain-test-task/controller"
 	"github.com/entain-test-task/model"
 	"github.com/entain-test-task/model/enum"
-	"github.com/entain-test-task/repository"
 	"github.com/gorilla/mux"
 )
 
-func Router(repository *repository.Store) *mux.Router {
+func Router(controllers *controller.Controllers) *mux.Router {
 	router := mux.NewRouter()
-
-	controllers := controller.NewControllers(repository)
 
 	router.Use(validateSourceHeader)
 

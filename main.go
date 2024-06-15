@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/entain-test-task/configuration"
+	"github.com/entain-test-task/controller"
 	"github.com/entain-test-task/middleware"
 	"github.com/entain-test-task/repository"
-	"github.com/entain-test-task/service"
 )
 
 func main() {
@@ -21,17 +21,14 @@ func main() {
 	store := repository.NewStore(cfg)
 	defer store.Close()
 
-	router := middleware.Router(store)
+	controllers := controller.NewControllers(cfg, store)
 
-	// TODO: Refactor the go routine to a separate function
-	userRepo := repository.NewUser(store)
-	transactionRepo := repository.NewTransaction(store)
+	router := middleware.Router(controllers)
 
-	transactionService := service.NewTransaction(transactionRepo, userRepo)
 	go func() {
 		for {
 			time.Sleep(time.Duration(cfg.CancelOddRecordsMinutesInterval) * time.Minute)
-			transactionService.CancelLatestOddTransactionRecords(10)
+			controllers.Transaction.CancelLatestOddTransactionRecords()
 		}
 	}()
 

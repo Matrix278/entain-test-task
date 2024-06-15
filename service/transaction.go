@@ -102,8 +102,8 @@ func (service *Transaction) ProcessRecord(userID strfmt.UUID4, processRecordRequ
 	}, nil
 }
 
-func (service *Transaction) CancelLatestOddTransactionRecords(numberOfRecords int) {
-	transactions, err := service.transactionRepository.SelectLatestOddRecordTransactions(numberOfRecords)
+func (service *Transaction) CancelLatestOddTransactionRecords(numberOfLatestRecords int) {
+	transactions, err := service.transactionRepository.SelectLatestOddRecordTransactions(numberOfLatestRecords)
 	if err != nil {
 		log.Printf("unable to select latest odd record transactions. %v", err)
 		return

@@ -13,7 +13,7 @@ type Store struct {
 	db *sql.DB
 }
 
-func NewStore(cfg configuration.Config) *Store {
+func NewStore(cfg *configuration.Config) *Store {
 	db, err := sql.Open("postgres", cfg.PostgresDatabaseURL)
 	if err != nil {
 		log.Fatalf("unable to connect to database. %v", err)
