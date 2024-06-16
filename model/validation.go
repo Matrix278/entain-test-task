@@ -58,7 +58,7 @@ func recordStateValidator(fl validator.FieldLevel) bool {
 }
 
 func (v *Validator) translateError(err error) []error {
-	var errs []error
+	errs := make([]error, 0, 10)
 
 	if err == nil {
 		return nil
