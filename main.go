@@ -70,7 +70,7 @@ func main() {
 
 	// Shutdown the server.
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	// Wait for all goroutines to finish.
