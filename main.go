@@ -43,7 +43,7 @@ func main() {
 	go startCancelLatestOddTransactionRecords(ctx, cfg, controllers, &waitGroup)
 
 	// Handle SIGINT and SIGTERM.
-	ch := make(chan os.Signal)
+	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start the server in a separate goroutine.
