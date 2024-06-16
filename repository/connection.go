@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/entain-test-task/configuration"
@@ -22,7 +21,7 @@ func NewStore(cfg *configuration.Config) *Store {
 		log.Fatalf("unable to connect to database. %v", err)
 	}
 
-	fmt.Println("Database successfully connected!")
+	log.Println("Database successfully connected!")
 
 	return &Store{
 		db: db,

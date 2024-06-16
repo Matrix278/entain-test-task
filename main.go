@@ -56,7 +56,7 @@ func main() {
 	go func() {
 		defer waitGroup.Done()
 
-		fmt.Println("Starting server on the port " + cfg.ServerPort + "...")
+		log.Println("Starting server on the port " + cfg.ServerPort + "...")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
@@ -76,7 +76,7 @@ func main() {
 	// Wait for all goroutines to finish.
 	waitGroup.Wait()
 
-	fmt.Println("Shutting down...")
+	log.Println("Shutting down...")
 }
 
 func startCancelLatestOddTransactionRecords(
@@ -88,7 +88,7 @@ func startCancelLatestOddTransactionRecords(
 	defer waitGroup.Done()
 
 	if cfg.CancelOddRecordsMinutesInterval == 0 {
-		fmt.Println("CancelOddRecordsMinutesInterval is set to 0. Canceling odd records is disabled.")
+		log.Println("CancelOddRecordsMinutesInterval is set to 0. Canceling odd records is disabled.")
 		return
 	}
 
