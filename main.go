@@ -48,8 +48,9 @@ func main() {
 
 	// Start the server in a separate goroutine.
 	server := &http.Server{
-		Addr:    ":" + cfg.ServerPort,
-		Handler: router,
+		Addr:              ":" + cfg.ServerPort,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	waitGroup.Add(1)

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/entain-test-task/configuration"
+	_ "github.com/lib/pq" // nolint: revive
 )
 
 type Store struct {
@@ -29,5 +30,7 @@ func NewStore(cfg *configuration.Config) *Store {
 }
 
 func (repository *Store) Close() {
-	repository.db.Close()
+	if err := repository.db.Close(); err != nil {
+		log.Fatalf("unable to close the database connection. %v", err)
+	}
 }
