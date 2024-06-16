@@ -61,6 +61,6 @@ This user has 50 amount of his balance for testing.
 ## To run application in docker container:
 
 1. Create `.env` file in root folder and add all required variables from `.env.example` file
-2. To run docker container you should have `docker` and `docker-compose` tools installed (Tested on `docker version 20.10.22, build 3a2c30b` and `docker-compose version 1.26.2, build eefe0d31`)
+2. To run docker container you should have `docker` and `docker-compose` tools installed (Tested on `Docker version 26.1.3, build b72abbb` and `Docker Compose version v2.27.1`)
 3. `docker-compose up` - to run application in docker container
 4. `docker-compose down` - to stop application in docker container
