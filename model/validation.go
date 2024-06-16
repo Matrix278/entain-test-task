@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"log"
 
 	enum "github.com/entain-test-task/model/enum"
 	"github.com/go-playground/locales/en"
@@ -22,15 +23,22 @@ func NewValidator() *Validator {
 	uni := ut.New(en, en)
 	translator, _ := uni.GetTranslator("en")
 
-	enTranslations.RegisterDefaultTranslations(validate, translator)
+	if err := enTranslations.RegisterDefaultTranslations(validate, translator); err != nil {
+		log.Fatal(err)
+	}
 
-	validate.RegisterValidation("record_state", recordStateValidator)
-	validate.RegisterTranslation("record_state", translator, func(ut ut.Translator) error {
+	if err := validate.RegisterValidation("record_state", recordStateValidator); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := validate.RegisterTranslation("record_state", translator, func(ut ut.Translator) error {
 		return ut.Add("record_state", "{0} is not a valid record state", true)
 	}, func(ut ut.Translator, fe validator.FieldError) string {
 		t, _ := ut.T("record_state", fe.Field())
 		return t
-	})
+	}); err != nil {
+		log.Fatal(err)
+	}
 
 	return &Validator{
 		translator: translator,
