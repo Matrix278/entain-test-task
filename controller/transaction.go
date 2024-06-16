@@ -63,16 +63,7 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 
 	var processRecordRequest requestmodel.ProcessRecordRequest
 	if err := json.NewDecoder(r.Body).Decode(&processRecordRequest); err != nil {
-		typeErr, ok := err.(*json.UnmarshalTypeError)
-		if ok {
-			StatusBadRequestWithErrors(w, "validation error", []error{
-				errors.New(typeErr.Field + " is not within allowed range"),
-			})
-			return
-		}
-
-		log.Printf("unable to decode the request body. %v", err)
-		StatusInternalServerError(w)
+		handleDecodeError(err, w)
 		return
 	}
 
@@ -108,4 +99,26 @@ func handleProcessRecordError(w http.ResponseWriter, err error) {
 		log.Printf("%s. %v", "unable to process record", err)
 		StatusInternalServerError(w)
 	}
+}
+
+func handleDecodeError(err error, w http.ResponseWriter) {
+	if err == nil {
+		return
+	}
+
+	handleUnmarshalTypeError(err, w)
+
+	log.Printf("unable to decode the request body. %v", err)
+	StatusInternalServerError(w)
+}
+
+func handleUnmarshalTypeError(err error, w http.ResponseWriter) {
+	typeErr, ok := err.(*json.UnmarshalTypeError)
+	if !ok {
+		return
+	}
+
+	StatusBadRequestWithErrors(w, "validation error", []error{
+		errors.New(typeErr.Field + " is not within allowed range"),
+	})
 }
