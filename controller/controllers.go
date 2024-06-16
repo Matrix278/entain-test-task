@@ -4,8 +4,6 @@ import (
 	"github.com/entain-test-task/configuration"
 	"github.com/entain-test-task/repository"
 	"github.com/entain-test-task/service"
-
-	_ "github.com/lib/pq"
 )
 
 type Controllers struct {

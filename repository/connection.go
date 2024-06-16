@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/entain-test-task/configuration"
-	_ "github.com/lib/pq"
 )
 
 type Store struct {

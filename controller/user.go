@@ -8,8 +8,6 @@ import (
 	"github.com/entain-test-task/service"
 	"github.com/go-openapi/strfmt"
 	"github.com/gorilla/mux"
-
-	_ "github.com/lib/pq"
 )
 
 type User struct {

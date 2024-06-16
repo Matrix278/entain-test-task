@@ -5,8 +5,6 @@ import (
 	responsemodel "github.com/entain-test-task/model/response"
 	"github.com/entain-test-task/repository"
 	"github.com/go-openapi/strfmt"
-
-	_ "github.com/lib/pq"
 )
 
 type User struct {

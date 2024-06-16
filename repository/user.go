@@ -6,7 +6,6 @@ import (
 
 	"github.com/entain-test-task/model"
 	"github.com/go-openapi/strfmt"
-	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 

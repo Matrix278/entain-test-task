@@ -12,8 +12,6 @@ import (
 	"github.com/entain-test-task/repository"
 	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
-
-	_ "github.com/lib/pq"
 )
 
 type Transaction struct {
