@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/entain-test-task/configuration"
@@ -13,7 +14,15 @@ type Store struct {
 }
 
 func NewStore(cfg *configuration.Config) *Store {
-	db, err := sql.Open("postgres", cfg.PostgresDatabaseURL)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.PostgresHost,
+		cfg.PostgresPort,
+		cfg.PostgresUser,
+		cfg.PostgresPassword,
+		cfg.PostgresName,
+	)
+
+	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Fatalf("unable to connect to database. %v", err)
 	}
