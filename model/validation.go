@@ -57,7 +57,9 @@ func recordStateValidator(fl validator.FieldLevel) bool {
 	return IsArrayContainsValue(enum.RecordStates, fl.Field().String())
 }
 
-func (v *Validator) translateError(err error) (errs []error) {
+func (v *Validator) translateError(err error) []error {
+	var errs []error
+
 	if err == nil {
 		return nil
 	}

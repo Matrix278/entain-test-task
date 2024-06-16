@@ -17,7 +17,7 @@ type Config struct {
 	ServerPort                         string
 }
 
-func Load() (config *Config, err error) {
+func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
 		return nil, err
 	}
