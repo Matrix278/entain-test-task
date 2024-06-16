@@ -38,7 +38,7 @@ Process record request body example:
 
 Transaction id is unique, so you can't process the same transaction twice, provide UUID v4 format.
 State can be `win` or `lose`.
-Amount is a number, can be positive or negative.
+Amount is a number should be positive but to have a negative balance you should provide a `lose` state.
 
 ### Required header for all endpoints:
 

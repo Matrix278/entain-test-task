@@ -17,8 +17,9 @@ import (
 )
 
 type Transaction struct {
-	cfg     *configuration.Config
-	service *service.Transaction
+	cfg       *configuration.Config
+	service   *service.Transaction
+	validator *model.Validator
 }
 
 func NewTransaction(
@@ -26,8 +27,9 @@ func NewTransaction(
 	service *service.Transaction,
 ) *Transaction {
 	return &Transaction{
-		cfg:     cfg,
-		service: service,
+		cfg:       cfg,
+		service:   service,
+		validator: model.NewValidator(),
 	}
 }
 
@@ -74,7 +76,7 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	validationErrors := model.ValidateRequest(processRecordRequest)
+	validationErrors := controller.validator.ValidateRequest(processRecordRequest)
 	if validationErrors != nil {
 		log.Printf("unable to validate request body. %v", validationErrors)
 		StatusBadRequestWithErrors(w, "validation error", validationErrors)
