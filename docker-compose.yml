@@ -46,7 +46,7 @@ services:
       container_name: migrate_container
       volumes:
         - ./migrations:/migrations
-      command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@postgresdb:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
+      command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_DB_USER}:${POSTGRES_DB_PASS}@${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?sslmode=disable", "up", "3"]
       depends_on:
         - postgresdb
 
