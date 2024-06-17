@@ -14,10 +14,10 @@ func Router(controllers *controller.Controllers) *mux.Router {
 
 	router.Use(validateSourceHeader)
 
-	router.HandleFunc("/users", controllers.User.GetAllUsers).Methods("GET")
-	router.HandleFunc("/users/{user_id}", controllers.User.GetUserByID).Methods("GET")
-	router.HandleFunc("/transactions/{user_id}", controllers.Transaction.GetAllTransactionsByUserID).Methods("GET")
-	router.HandleFunc("/process-record/{user_id}", controllers.Transaction.ProcessRecord).Methods("POST")
+	router.HandleFunc("/users", controllers.User.GetAllUsers).Methods(http.MethodGet)
+	router.HandleFunc("/users/{user_id}", controllers.User.GetUserByID).Methods(http.MethodGet)
+	router.HandleFunc("/transactions/{user_id}", controllers.Transaction.GetAllTransactionsByUserID).Methods(http.MethodGet)
+	router.HandleFunc("/process-record/{user_id}", controllers.Transaction.ProcessRecord).Methods(http.MethodPost)
 
 	return router
 }
