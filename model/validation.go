@@ -21,7 +21,10 @@ func NewValidator() *Validator {
 
 	en := en.New()
 	uni := ut.New(en, en)
-	translator, _ := uni.GetTranslator("en")
+	translator, found := uni.GetTranslator("en")
+	if !found {
+		log.Fatal("translator not found")
+	}
 
 	if err := enTranslations.RegisterDefaultTranslations(validate, translator); err != nil {
 		log.Fatal(err)
