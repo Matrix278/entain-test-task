@@ -15,19 +15,19 @@ import (
 )
 
 type Transaction struct {
-	cfg       *configuration.Config
-	service   service.ITransaction
-	validator *model.Validator
+	cfg                *configuration.Config
+	transactionService service.ITransaction
+	validator          *model.Validator
 }
 
 func NewTransaction(
 	cfg *configuration.Config,
-	service service.ITransaction,
+	transactionService service.ITransaction,
 ) *Transaction {
 	return &Transaction{
-		cfg:       cfg,
-		service:   service,
-		validator: model.NewValidator(),
+		cfg:                cfg,
+		transactionService: transactionService,
+		validator:          model.NewValidator(),
 	}
 }
 
@@ -40,7 +40,7 @@ func (controller *Transaction) GetAllTransactionsByUserID(w http.ResponseWriter,
 		return
 	}
 
-	getAllTransactionsByUserIDResponse, err := controller.service.GetAllTransactionsByUserID(strfmt.UUID4(userID))
+	getAllTransactionsByUserIDResponse, err := controller.transactionService.GetAllTransactionsByUserID(strfmt.UUID4(userID))
 	if err != nil {
 		log.Printf("getting all transactions by user ID failed. %v", err)
 		StatusInternalServerError(w)
@@ -72,7 +72,7 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	processRecordResponse, err := controller.service.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
+	processRecordResponse, err := controller.transactionService.ProcessRecord(strfmt.UUID4(userID), processRecordRequest)
 	if err != nil {
 		handleProcessRecordError(w, err)
 		return
@@ -82,7 +82,7 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 }
 
 func (controller *Transaction) CancelLatestOddTransactionRecords() {
-	controller.service.CancelLatestOddTransactionRecords(controller.cfg.NumberOfLatestRecordsForCancelling)
+	controller.transactionService.CancelLatestOddTransactionRecords(controller.cfg.NumberOfLatestRecordsForCancelling)
 }
 
 func handleProcessRecordError(w http.ResponseWriter, err error) {

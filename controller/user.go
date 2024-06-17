@@ -11,17 +11,17 @@ import (
 )
 
 type User struct {
-	service service.IUser
+	userService service.IUser
 }
 
-func NewUser(service service.IUser) *User {
+func NewUser(userService service.IUser) *User {
 	return &User{
-		service: service,
+		userService: userService,
 	}
 }
 
 func (controller *User) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
-	getAllUsersResponse, err := controller.service.GetAllUsers()
+	getAllUsersResponse, err := controller.userService.GetAllUsers()
 	if err != nil {
 		log.Printf("getting all users failed. %v", err)
 		StatusInternalServerError(w)
@@ -40,7 +40,7 @@ func (controller *User) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := controller.service.GetUser(strfmt.UUID4(userID))
+	user, err := controller.userService.GetUser(strfmt.UUID4(userID))
 	if err != nil {
 		if err.Error() == model.ErrUserNotFound().Error() {
 			StatusUnprocessableEntity(w, model.ErrUserNotFound().Error())
