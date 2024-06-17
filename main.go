@@ -21,7 +21,7 @@ func main() {
 	// Load the configuration
 	cfg, err := configuration.Load()
 	if err != nil {
-		log.Fatal(fmt.Errorf("error loading configuration: %v", err))
+		log.Fatal(fmt.Errorf("configuration loading failed: %w", err))
 	}
 
 	// Initialize the db store
