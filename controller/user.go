@@ -23,7 +23,7 @@ func NewUser(service *service.User) *User {
 func (controller *User) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 	getAllUsersResponse, err := controller.service.GetAllUsers()
 	if err != nil {
-		log.Printf("unable to get all users. %v", err)
+		log.Printf("getting all users failed. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
@@ -47,7 +47,7 @@ func (controller *User) GetUserByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("unable to get user. %v", err)
+		log.Printf("getting user by ID failed. %v", err)
 		StatusInternalServerError(w)
 		return
 	}

@@ -24,11 +24,11 @@ func NewStore(cfg *configuration.Config) *Store {
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatalf("unable to connect to database. %v", err)
+		log.Fatalf("connecting to database failed. %v", err)
 	}
 
 	if err = db.Ping(); err != nil {
-		log.Fatalf("unable to connect to database. %v", err)
+		log.Fatalf("connecting to database failed. %v", err)
 	}
 
 	log.Println("Database successfully connected!")
@@ -40,6 +40,6 @@ func NewStore(cfg *configuration.Config) *Store {
 
 func (repository *Store) Close() {
 	if err := repository.db.Close(); err != nil {
-		log.Fatalf("unable to close the database connection. %v", err)
+		log.Fatalf("closing database connection failed. %v", err)
 	}
 }

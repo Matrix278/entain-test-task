@@ -42,7 +42,7 @@ func (controller *Transaction) GetAllTransactionsByUserID(w http.ResponseWriter,
 
 	getAllTransactionsByUserIDResponse, err := controller.service.GetAllTransactionsByUserID(strfmt.UUID4(userID))
 	if err != nil {
-		log.Printf("unable to get transactions. %v", err)
+		log.Printf("getting all transactions by user ID failed. %v", err)
 		StatusInternalServerError(w)
 		return
 	}
@@ -67,7 +67,7 @@ func (controller *Transaction) ProcessRecord(w http.ResponseWriter, r *http.Requ
 
 	validationErrors := controller.validator.ValidateRequest(processRecordRequest)
 	if validationErrors != nil {
-		log.Printf("unable to validate request body. %v", validationErrors)
+		log.Printf("validating request failed. %v", validationErrors)
 		StatusBadRequestWithErrors(w, "validation error", validationErrors)
 		return
 	}
@@ -94,7 +94,7 @@ func handleProcessRecordError(w http.ResponseWriter, err error) {
 	case model.ErrTransactionAlreadyExists().Error():
 		StatusUnprocessableEntity(w, model.ErrTransactionAlreadyExists().Error())
 	default:
-		log.Printf("%s. %v", "unable to process record", err)
+		log.Printf("%s. %v", "processing record failed", err)
 		StatusInternalServerError(w)
 	}
 }
@@ -106,7 +106,7 @@ func handleDecodeError(err error, w http.ResponseWriter) {
 
 	handleUnmarshalTypeError(err, w)
 
-	log.Printf("unable to decode the request body. %v", err)
+	log.Printf("decoding request failed. %v", err)
 	StatusInternalServerError(w)
 }
 

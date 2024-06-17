@@ -33,7 +33,7 @@ func (repository *User) SelectUsers() ([]model.User, error) {
 			users
 	`)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to select users")
+		return nil, errors.Wrap(err, "selecting users failed")
 	}
 
 	for rows.Next() {
@@ -45,7 +45,7 @@ func (repository *User) SelectUsers() ([]model.User, error) {
 			&user.UpdatedAt,
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan user")
+			return nil, errors.Wrap(err, "scanning user failed")
 		}
 
 		users = append(users, user)
@@ -71,7 +71,7 @@ func (repository *User) SelectUser(userID strfmt.UUID4) (*model.User, error) {
 			return nil, model.ErrUserNotFound()
 		}
 
-		return nil, errors.Wrap(err, "failed to select user")
+		return nil, errors.Wrap(err, "selecting user failed")
 	}
 
 	return &user, nil
@@ -95,7 +95,7 @@ func (repository *User) UpdateUserBalance(tx *sql.Tx, userID strfmt.UUID4, amoun
 		time.Now(),
 		userID,
 	); err != nil {
-		return errors.Wrap(err, "failed to update user balance")
+		return errors.Wrap(err, "updating user balance failed")
 	}
 
 	return nil

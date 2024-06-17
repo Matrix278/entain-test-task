@@ -37,7 +37,7 @@ func (repository *Transaction) SelectTransactionsByUserID(userID strfmt.UUID4) (
 		userID,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get all transactions")
+		return nil, errors.Wrap(err, "getting transactions by user ID failed")
 	}
 
 	for rows.Next() {
@@ -50,7 +50,7 @@ func (repository *Transaction) SelectTransactionsByUserID(userID strfmt.UUID4) (
 			&transaction.CanceledAt,
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan transaction")
+			return nil, errors.Wrap(err, "scanning transaction failed")
 		}
 
 		transactions = append(transactions, transaction)
@@ -61,7 +61,7 @@ func (repository *Transaction) SelectTransactionsByUserID(userID strfmt.UUID4) (
 
 func (repository *Transaction) Insert(tx *sql.Tx, transaction model.Transaction) error {
 	if tx == nil {
-		return errors.New("tx is nil")
+		return errors.New("tx is required")
 	}
 
 	if _, err := tx.Exec(`
@@ -79,7 +79,7 @@ func (repository *Transaction) Insert(tx *sql.Tx, transaction model.Transaction)
 			return model.ErrTransactionAlreadyExists()
 		}
 
-		return errors.Wrap(err, "failed to insert transaction")
+		return errors.Wrap(err, "inserting transaction failed")
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func (repository *Transaction) Insert(tx *sql.Tx, transaction model.Transaction)
 
 func (repository *Transaction) Update(tx *sql.Tx, transaction model.Transaction) error {
 	if tx == nil {
-		return errors.New("tx is nil")
+		return errors.New("tx is required")
 	}
 
 	if _, err := tx.Exec(`
@@ -105,7 +105,7 @@ func (repository *Transaction) Update(tx *sql.Tx, transaction model.Transaction)
 		transaction.CanceledAt,
 		transaction.ID,
 	); err != nil {
-		return errors.Wrap(err, "failed to update transaction")
+		return errors.Wrap(err, "updating transaction failed")
 	}
 
 	return nil
@@ -135,7 +135,7 @@ func (repository *Transaction) SelectLatestOddRecordTransactions(numberOfTransac
 		numberOfTransactionRecords,
 	)
 	if err != nil {
-		return transactions, errors.Wrap(err, "failed to get latest odd records")
+		return transactions, errors.Wrap(err, "getting latest odd record transactions failed")
 	}
 
 	defer rows.Close()
@@ -150,7 +150,7 @@ func (repository *Transaction) SelectLatestOddRecordTransactions(numberOfTransac
 			&transaction.CreatedAt,
 			&transaction.CanceledAt,
 		); err != nil {
-			return transactions, errors.Wrap(err, "failed to scan transaction")
+			return transactions, errors.Wrap(err, "scanning latest odd record transaction failed")
 		}
 
 		transactions = append(transactions, transaction)
