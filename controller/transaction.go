@@ -16,13 +16,13 @@ import (
 
 type Transaction struct {
 	cfg       *configuration.Config
-	service   *service.Transaction
+	service   service.ITransaction
 	validator *model.Validator
 }
 
 func NewTransaction(
 	cfg *configuration.Config,
-	service *service.Transaction,
+	service service.ITransaction,
 ) *Transaction {
 	return &Transaction{
 		cfg:       cfg,

@@ -7,9 +7,16 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
+type IUser interface {
+	GetAllUsers() (*responsemodel.GetAllUsersResponse, error)
+	GetUser(userID strfmt.UUID4) (*responsemodel.GetUserResponse, error)
+}
+
 type User struct {
 	userRepository *repository.User
 }
+
+var _ IUser = (*User)(nil)
 
 func NewUser(userRepository *repository.User) *User {
 	return &User{

@@ -15,10 +15,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ITransaction interface {
+	GetAllTransactionsByUserID(userID strfmt.UUID4) (*responsemodel.GetAllTransactionsByUserIDResponse, error)
+	ProcessRecord(userID strfmt.UUID4, processRecordRequest requestmodel.ProcessRecordRequest) (*responsemodel.ProcessRecordResponse, error)
+	CancelLatestOddTransactionRecords(numberOfLatestRecords int)
+}
+
 type Transaction struct {
 	transactionRepository *repository.Transaction
 	userRepository        *repository.User
 }
+
+var _ ITransaction = (*Transaction)(nil)
 
 func NewTransaction(
 	transactionRepository *repository.Transaction,
