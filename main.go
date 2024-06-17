@@ -1,41 +1,107 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
+	"github.com/entain-test-task/configuration"
+	"github.com/entain-test-task/controller"
 	"github.com/entain-test-task/middleware"
 	"github.com/entain-test-task/repository"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(fmt.Errorf("error loading .env file: %v", err))
-	}
-
-	db := repository.InitDB()
-	defer db.Close()
-
-	router := middleware.Router()
-
-	nMinutes, err := strconv.Atoi(os.Getenv("CANCEL_ODD_RECORDS_MINUTES_INTERVAL"))
+	// Load the configuration
+	cfg, err := configuration.Load()
 	if err != nil {
-		log.Fatal("CANCEL_ODD_RECORDS_MINUTES_INTERVAL must be an integer")
+		log.Fatal(fmt.Errorf("configuration loading failed: %w", err))
 	}
 
+	// Initialize the db store
+	store := repository.NewStore(cfg)
+	defer store.Close()
+
+	// Initialize the controllers
+	controllers := controller.NewControllers(cfg, store)
+
+	// Initialize the router
+	router := middleware.Router(controllers)
+
+	// Start a goroutine to cancel the latest odd transaction records.
+	ctx, cancelCtx := context.WithCancel(context.Background())
+	defer cancelCtx()
+
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(1)
+	go startCancelLatestOddTransactionRecords(ctx, cfg, controllers, &waitGroup)
+
+	// Handle SIGINT and SIGTERM.
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start the server in a separate goroutine.
+	server := &http.Server{
+		Addr:              ":" + cfg.ServerPort,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	waitGroup.Add(1)
 	go func() {
-		for {
-			time.Sleep(time.Duration(nMinutes) * time.Minute)
-			middleware.CancelLatestOddTransactionRecords(10)
+		defer waitGroup.Done()
+
+		log.Println("Starting server on the port " + cfg.ServerPort + "...")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
 		}
 	}()
 
-	fmt.Println("Starting server on the port " + os.Getenv("SERVER_PORT") + "...")
+	// Wait for a shutdown signal.
+	<-ch
 
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("SERVER_PORT"), router))
+	// Cancel the context.
+	cancelCtx()
+
+	// Shutdown the server.
+	if err := server.Shutdown(ctx); err != nil {
+		log.Print(err)
+	}
+
+	// Wait for all goroutines to finish.
+	waitGroup.Wait()
+
+	log.Println("Shutting down...")
+}
+
+func startCancelLatestOddTransactionRecords(
+	ctx context.Context,
+	cfg *configuration.Config,
+	controllers *controller.Controllers,
+	waitGroup *sync.WaitGroup,
+) {
+	defer waitGroup.Done()
+
+	if cfg.CancelOddRecordsMinutesInterval == 0 {
+		log.Println("CancelOddRecordsMinutesInterval is set to 0. Canceling odd records is disabled.")
+		return
+	}
+
+	ticker := time.NewTicker(time.Duration(cfg.CancelOddRecordsMinutesInterval) * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			controllers.Transaction.CancelLatestOddTransactionRecords()
+		case <-ctx.Done():
+			return
+		}
+	}
 }

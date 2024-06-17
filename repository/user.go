@@ -1,23 +1,39 @@
 package repository
 
 import (
+	"database/sql"
+	"time"
+
 	"github.com/entain-test-task/model"
 	"github.com/go-openapi/strfmt"
-	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
-func GetAllUsers() ([]model.User, error) {
+type User struct {
+	store *Store
+}
+
+func NewUser(store *Store) *User {
+	return &User{
+		store: store,
+	}
+}
+
+func (repository *User) Begin() (*sql.Tx, error) {
+	return repository.store.db.Begin()
+}
+
+func (repository *User) SelectUsers() ([]model.User, error) {
 	var users []model.User
 
-	rows, err := DB.Query(`
+	rows, err := repository.store.db.Query(`
 		SELECT
 			*
 		FROM
 			users
 	`)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get all users")
+		return nil, errors.Wrap(err, "selecting users failed")
 	}
 
 	for rows.Next() {
@@ -29,7 +45,7 @@ func GetAllUsers() ([]model.User, error) {
 			&user.UpdatedAt,
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan user")
+			return nil, errors.Wrap(err, "scanning user failed")
 		}
 
 		users = append(users, user)
@@ -38,10 +54,10 @@ func GetAllUsers() ([]model.User, error) {
 	return users, nil
 }
 
-func GetUser(userID strfmt.UUID4) (*model.User, error) {
+func (repository *User) SelectUser(userID strfmt.UUID4) (*model.User, error) {
 	var user model.User
 
-	err := DB.QueryRow(`
+	if err := repository.store.db.QueryRow(`
 		SELECT
 			*
 		FROM
@@ -50,18 +66,37 @@ func GetUser(userID strfmt.UUID4) (*model.User, error) {
 			id = $1
 	`,
 		userID,
-	).Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt)
-	if err != nil {
+	).Scan(&user.ID, &user.Balance, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			return nil, ErrUserNotFound()
+			return nil, model.ErrUserNotFound()
 		}
 
-		return nil, errors.Wrap(err, "failed to get user")
+		return nil, errors.Wrap(err, "selecting user failed")
 	}
 
 	return &user, nil
 }
 
-func ErrUserNotFound() error {
-	return errors.New("user not found")
+func (repository *User) UpdateUserBalance(tx *sql.Tx, userID strfmt.UUID4, amount float64) error {
+	if tx == nil {
+		return errors.New("tx is nil")
+	}
+
+	if _, err := tx.Exec(`
+		UPDATE
+			users
+		SET
+			balance = balance + $1,
+			updated_at = $2
+		WHERE
+			id = $3
+	`,
+		amount,
+		time.Now(),
+		userID,
+	); err != nil {
+		return errors.Wrap(err, "updating user balance failed")
+	}
+
+	return nil
 }

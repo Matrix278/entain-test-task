@@ -4,35 +4,42 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
-	_ "github.com/lib/pq"
+	"github.com/entain-test-task/configuration"
+	_ "github.com/lib/pq" // nolint: revive
 )
 
-var DB *sql.DB
+type Store struct {
+	db *sql.DB
+}
 
-// InitDB will initialize the database
-func InitDB() *sql.DB {
+func NewStore(cfg *configuration.Config) *Store {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_DB_HOST"),
-		os.Getenv("POSTGRES_DB_PORT"),
-		os.Getenv("POSTGRES_DB_USER"),
-		os.Getenv("POSTGRES_DB_PASS"),
-		os.Getenv("POSTGRES_DB_NAME"),
+		cfg.PostgresHost,
+		cfg.PostgresPort,
+		cfg.PostgresUser,
+		cfg.PostgresPassword,
+		cfg.PostgresName,
 	)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatalf("unable to connect to database. %v", err)
+		log.Fatalf("connecting to database failed. %v", err)
 	}
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("unable to connect to database. %v", err)
+	if err = db.Ping(); err != nil {
+		log.Fatalf("connecting to database failed. %v", err)
 	}
 
-	fmt.Println("DB successfully connected!")
-	DB = db
+	log.Println("Database successfully connected!")
 
-	return db
+	return &Store{
+		db: db,
+	}
+}
+
+func (repository *Store) Close() {
+	if err := repository.db.Close(); err != nil {
+		log.Fatalf("closing database connection failed. %v", err)
+	}
 }
